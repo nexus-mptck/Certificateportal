@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% load static %}
+{% comment %}
+Student detail. Backend: student, enrollments (with progress, attendance_summary), certificates, completion_status. Demo data shown.
+{% endcomment %}
+{% block title %}Student detail{% endblock %}
+{% block role %}admin{% endblock %}
+{% block nav_key %}students{% endblock %}
+{% block content %}
+<div class="page-head"><div><div class="breadcrumb"><a href="/portal/admin/students/">Students</a><span>/</span><span>Priya Raman</span></div>
+  <div class="row" style="--gap:16px"><span class="avatar avatar-lg">PR</span><div><h1>Priya Raman</h1><p style="margin:2px 0 0">Registration no. <b class="mono">MTI-2026-0142</b> · <span class="badge badge-info">Enrolled</span></p></div></div></div>
+  <div class="row"><a class="btn" href="/portal/admin/students/enroll/"><i data-lucide="pencil"></i>Edit</a><a class="btn btn-primary" href="/portal/admin/certificates/"><i data-lucide="award"></i>Issue certificate</a></div></div>
+<div class="grid grid-main">
+  <div class="stack" style="--gap:20px">
+    <section class="card"><div class="card-head"><h2>Enrolled courses</h2></div>
+      <div class="list-row"><div class="grow"><strong>Industrial Safety Fundamentals</strong><small>5 days · 30 hours · Started 20 Oct 2026</small><div style="margin-top:8px;max-width:320px"><div class="progress-cell"><div class="progress"><span style="width:35%"></span></div><small class="mono">35%</small></div></div></div><span class="badge badge-info">In progress</span></div>
+      <div class="list-row"><div class="grow"><strong>Basic First Aid</strong><small>1 day · 8 hours · Completed 12 Mar 2026</small><div style="margin-top:8px;max-width:320px"><div class="progress-cell"><div class="progress is-complete"><span style="width:100%"></span></div><small class="mono">100%</small></div></div></div><span class="badge badge-success">Completed</span></div></section>
+    <section class="card"><div class="card-head"><div><h2>Attendance summary</h2><p>Industrial Safety Fundamentals</p></div><a href="/portal/admin/attendance/" class="btn btn-sm">Open attendance</a></div>
+      <div class="card-body"><div class="summary-strip"><div><strong>3</strong><span>Present</span></div><div><strong>1</strong><span>Absent</span></div><div><strong>0</strong><span>Leave</span></div><div><strong>75%</strong><span>Attendance</span></div></div></div></section>
+    <section class="card"><div class="card-head"><h2>Certificates issued</h2></div>
+      <div class="list-row"><i data-lucide="award"></i><div class="grow"><strong>Certificate of Completion · Basic First Aid</strong><small class="mono">MTI-2026-0071 · Issued 14 Mar 2026</small></div><span class="badge badge-success">Issued</span><button class="btn btn-sm" data-modal-open="cert-preview">Preview</button></div></section>
+  </div>
+  <div class="stack" style="--gap:20px">
+    <section class="card"><div class="card-head"><h2>Profile</h2></div><div class="card-body"><dl class="kv"><dt>Email</dt><dd>priya.raman@example.com</dd><dt>Phone</dt><dd>+1 555 0142</dd><dt>Registration no.</dt><dd>MTI-2026-0142</dd><dt>Enrolled since</dt><dd>20 Oct 2026</dd><dt>Completion</dt><dd>Not yet approved</dd></dl></div></section>
+    <section class="card"><div class="card-head"><h2>Completion status</h2></div><div class="card-body stack" style="--gap:10px"><p class="text-muted">Needs 80% attendance and all 30 training hours before it can be approved.</p><div class="progress-cell"><div class="progress"><span style="width:35%"></span></div><small class="mono">35%</small></div><p class="text-sm text-muted mono">10.5 of 30 hours completed</p></div></section>
+  </div>
+</div>
+{% endblock %}
+{% block modals %}
+{% include 'components/certificate_modal.html' with modal_id='cert-preview' cert_type='completion' %}
+{% endblock %}
+{% block extra_js %}
+<script src="{% static 'js/certificates.js' %}"></script>
+{% endblock %}

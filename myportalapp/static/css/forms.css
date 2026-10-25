@@ -1,0 +1,42 @@
+/* forms.css — fields, validation, toggles, upload */
+.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 20px}
+.form-grid .full{grid-column:1/-1}
+@media(max-width:640px){.form-grid{grid-template-columns:1fr}}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label,.label{font-weight:550;font-size:13px}
+.field .req{color:var(--red-600)}
+.hint{font-size:12px;color:var(--text-3)}
+.input,.select,.textarea{width:100%;height:40px;padding:0 12px;border:1px solid var(--border-strong);border-radius:var(--r-md);background:var(--surface);font:inherit;color:var(--text);transition:border-color var(--ease),box-shadow var(--ease)}
+.textarea{height:auto;min-height:104px;padding:10px 12px;resize:vertical}
+.select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%2364748b' stroke-width='2' viewBox='0 0 24 24'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 11px center;padding-right:34px}
+.input:hover,.select:hover,.textarea:hover{border-color:#94a3b8}
+.input:focus,.select:focus,.textarea:focus{outline:none;border-color:var(--blue-500);box-shadow:0 0 0 3px rgba(59,130,246,.2)}
+.input-group{position:relative}.input-group .input{padding-right:44px}
+.input-group .toggle-pw{position:absolute;right:4px;top:4px;width:32px;height:32px}
+.field.has-error .input,.field.has-error .select,.field.has-error .textarea{border-color:var(--red-600);background:var(--red-50)}
+.field.has-error .input:focus{box-shadow:0 0 0 3px rgba(185,28,28,.18)}
+.error-text{display:none;font-size:12.5px;color:var(--red-600);align-items:center;gap:6px}
+.field.has-error .error-text{display:flex}
+.alert{display:flex;gap:10px;align-items:flex-start;padding:11px 14px;border-radius:var(--r-md);font-size:13px;margin-bottom:18px;border:1px solid}
+.alert[hidden]{display:none}
+.alert-error{background:var(--red-50);border-color:#fecaca;color:var(--red-600)}
+.alert-info{background:var(--blue-50);border-color:var(--blue-100);color:var(--blue-700)}
+.alert-success{background:var(--green-50);border-color:#bbf7d0;color:var(--green-600)}
+.check{display:flex;align-items:center;gap:9px;cursor:pointer}
+.check input{width:16px;height:16px;accent-color:var(--blue-600)}
+.switch{position:relative;display:inline-flex;align-items:center;gap:10px;cursor:pointer}
+.switch input{position:absolute;opacity:0}
+.switch .track{width:38px;height:22px;background:var(--border-strong);border-radius:99px;position:relative;transition:background var(--ease)}
+.switch .track::after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:var(--shadow-sm);transition:transform var(--ease)}
+.switch input:checked+.track{background:var(--blue-600)}.switch input:checked+.track::after{transform:translateX(16px)}
+.switch input:focus-visible+.track{outline:2px solid var(--blue-500);outline-offset:2px}
+.form-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:26px;padding-top:18px;border-top:1px solid var(--border)}
+.form-section+.form-section{margin-top:28px}.form-section>h2{margin-bottom:4px}.form-section>p{color:var(--text-3);margin-bottom:16px}
+.upload{display:flex;align-items:center;gap:16px;padding:16px;border:1.5px dashed var(--border-strong);border-radius:var(--r-md);background:var(--surface-2)}
+.upload img{width:64px;height:64px;object-fit:contain;background:#fff;border:1px solid var(--border);border-radius:var(--r-md);padding:6px}
+.segmented{display:inline-flex;border:1px solid var(--border-strong);border-radius:var(--r-md);overflow:hidden}
+.segmented label{padding:8px 14px;cursor:pointer;font-weight:550;color:var(--text-2);border-right:1px solid var(--border-strong)}
+.segmented label:last-child{border:0}.segmented input{position:absolute;opacity:0}
+.segmented input:checked+span{color:var(--blue-700)}
+.segmented label:has(input:checked){background:var(--blue-50);color:var(--blue-700)}
+.segmented label:has(input:focus-visible){outline:2px solid var(--blue-500);outline-offset:-2px}

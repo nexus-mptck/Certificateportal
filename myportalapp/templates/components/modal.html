@@ -1,0 +1,16 @@
+{# Reusable modal. Usage:
+   {% include 'components/modal.html' with modal_id='confirm-archive' modal_title='Archive course?' modal_body='...' modal_confirm='Archive' modal_toast='Course archived|Demo only.' %}
+   Open with: <button data-modal-open="confirm-archive">  Close: data-modal-close / Esc / backdrop click. #}
+<div class="modal-backdrop" id="{{ modal_id }}" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="{{ modal_id }}-title">
+    <div class="modal-head">
+      <div><h2 id="{{ modal_id }}-title">{{ modal_title }}</h2></div>
+      <button class="icon-btn" data-modal-close aria-label="Close"><i data-lucide="x"></i></button>
+    </div>
+    <div class="modal-body"><p>{{ modal_body }}</p></div>
+    <div class="modal-foot">
+      <button class="btn" data-modal-close>Cancel</button>
+      <button class="btn btn-primary" data-demo-action="{{ modal_toast|default:'Done|Demo only: nothing was saved.' }}">{{ modal_confirm|default:"Confirm" }}</button>
+    </div>
+  </div>
+</div>

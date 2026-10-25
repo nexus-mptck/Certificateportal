@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% load static %}
+{% comment %}
+Approvals queue. Backend: completion_requests; approve/reject would POST to a view. Here the buttons only change the badge client-side.
+{% endcomment %}
+{% block title %}Completion approvals{% endblock %}
+{% block role %}admin{% endblock %}
+{% block nav_key %}approvals{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>Completion approvals</h1><p>Review students who finished their course hours. Approving makes them eligible for a certificate.</p></div><span class="demo-note"><i data-lucide="flask-conical" style="width:14px;height:14px"></i>Demo data: actions are simulated</span></div>
+<section class="card" data-filter-scope>
+  <div class="toolbar"><label class="search"><span class="sr-only">Search approvals</span><i data-lucide="search"></i><input class="input" type="search" data-search placeholder="Search by student or course"></label>
+  <div class="chip-row" role="group" aria-label="Filter"><button class="chip" data-chip="all" aria-pressed="true">All</button><button class="chip" data-chip="pending" aria-pressed="false">Pending</button><button class="chip" data-chip="approved" aria-pressed="false">Approved</button><button class="chip" data-chip="rejected" aria-pressed="false">Rejected</button></div></div>
+  {# Backend: completion_requests (student, registration_number, course, attendance_percent, completed_hours, required_hours, status) #}
+  <div class="table-wrap"><table class="table"><thead><tr><th>Student</th><th>Course</th><th>Attendance</th><th>Learning hours</th><th>Completion status</th><th class="actions">Actions</th></tr></thead><tbody><tr data-row data-status="pending" data-name="Aisha Bello" data-reg="MTI-2026-0137" data-course="Industrial Safety Fundamentals" data-att="96%" data-hours="30 / 30"><td><div class="cell-main"><span class="avatar">AB</span><div><strong>Aisha Bello</strong><small class="mono">MTI-2026-0137</small></div></div></td><td>Industrial Safety Fundamentals</td><td class="mono">96%</td><td class="mono">30 / 30</td><td><span class="badge badge-warning" data-status-badge>Awaiting approval</span></td>
+<td class="actions"><button class="btn btn-sm" data-review aria-label="Review Aisha Bello">Review</button> <button class="btn btn-sm btn-danger" data-row-action data-demo-action="Rejected|Demo only: no record was changed." data-set-status="Rejected" data-badge-class="badge-danger" data-toast-type="error">Reject</button> <button class="btn btn-sm btn-success" data-row-action data-approve data-demo-action="Approved|Demo only: no record was changed." data-set-status="Approved" data-badge-class="badge-success">Approve</button></td></tr><tr data-row data-status="pending" data-name="Tom Becker" data-reg="MTI-2026-0136" data-course="Project Management Essentials" data-att="91%" data-hours="36 / 36"><td><div class="cell-main"><span class="avatar">TB</span><div><strong>Tom Becker</strong><small class="mono">MTI-2026-0136</small></div></div></td><td>Project Management Essentials</td><td class="mono">91%</td><td class="mono">36 / 36</td><td><span class="badge badge-warning" data-status-badge>Awaiting approval</span></td>
+<td class="actions"><button class="btn btn-sm" data-review aria-label="Review Tom Becker">Review</button> <button class="btn btn-sm btn-danger" data-row-action data-demo-action="Rejected|Demo only: no record was changed." data-set-status="Rejected" data-badge-class="badge-danger" data-toast-type="error">Reject</button> <button class="btn btn-sm btn-success" data-row-action data-approve data-demo-action="Approved|Demo only: no record was changed." data-set-status="Approved" data-badge-class="badge-success">Approve</button></td></tr><tr data-row data-status="pending" data-name="Mei Lin" data-reg="MTI-2026-0135" data-course="Data Analysis with Excel" data-att="88%" data-hours="41 / 41"><td><div class="cell-main"><span class="avatar">ML</span><div><strong>Mei Lin</strong><small class="mono">MTI-2026-0135</small></div></div></td><td>Data Analysis with Excel</td><td class="mono">88%</td><td class="mono">41 / 41</td><td><span class="badge badge-warning" data-status-badge>Awaiting approval</span></td>
+<td class="actions"><button class="btn btn-sm" data-review aria-label="Review Mei Lin">Review</button> <button class="btn btn-sm btn-danger" data-row-action data-demo-action="Rejected|Demo only: no record was changed." data-set-status="Rejected" data-badge-class="badge-danger" data-toast-type="error">Reject</button> <button class="btn btn-sm btn-success" data-row-action data-approve data-demo-action="Approved|Demo only: no record was changed." data-set-status="Approved" data-badge-class="badge-success">Approve</button></td></tr><tr data-row data-status="pending" data-name="Hannah Weiss" data-reg="MTI-2026-0133" data-course="Industrial Safety Fundamentals" data-att="78%" data-hours="30 / 30"><td><div class="cell-main"><span class="avatar">HW</span><div><strong>Hannah Weiss</strong><small class="mono">MTI-2026-0133</small></div></div></td><td>Industrial Safety Fundamentals</td><td class="mono">78%</td><td class="mono">30 / 30</td><td><span class="badge badge-danger" data-status-badge>Below 80% attendance</span></td>
+<td class="actions"><button class="btn btn-sm" data-review aria-label="Review Hannah Weiss">Review</button> <button class="btn btn-sm btn-danger" data-row-action data-demo-action="Rejected|Demo only: no record was changed." data-set-status="Rejected" data-badge-class="badge-danger" data-toast-type="error">Reject</button> <button class="btn btn-sm btn-success" data-row-action data-approve data-demo-action="Approved|Demo only: no record was changed." data-set-status="Approved" data-badge-class="badge-success">Approve</button></td></tr></tbody></table></div>
+  <div class="empty"><strong>Nothing to show</strong>No approvals match this filter.</div>
+</section>
+<div class="modal-backdrop" id="review-modal" hidden><div class="modal" role="dialog" aria-modal="true" aria-labelledby="review-title"><div class="modal-head"><h2 id="review-title">Review completion</h2><button class="icon-btn" data-modal-close aria-label="Close"><i data-lucide="x"></i></button></div>
+<div class="modal-body"><dl class="kv"><dt>Student</dt><dd id="rv-name"></dd><dt>Registration no.</dt><dd id="rv-reg" class="mono"></dd><dt>Course</dt><dd id="rv-course"></dd><dt>Attendance</dt><dd id="rv-att" class="mono"></dd><dt>Learning hours</dt><dd id="rv-hours" class="mono"></dd></dl><p class="text-muted text-sm" style="margin-top:14px">Courses require at least 80% attendance and every training hour.</p></div>
+<div class="modal-foot"><button class="btn" data-modal-close>Close</button><button class="btn btn-success" id="rv-approve">Approve</button></div></div></div>
+<script>
+  (function () {
+    var current = null;
+    document.addEventListener('click', function (e) {
+      var b = e.target.closest('[data-review]'); if (!b) return;
+      current = b.closest('[data-row]');
+      ['name','reg','course','att','hours'].forEach(function (k) { document.getElementById('rv-' + k).textContent = current.getAttribute('data-' + k); });
+      openModal('review-modal');
+    });
+    document.getElementById('rv-approve').addEventListener('click', function () { if (current) { current.querySelector('[data-approve]').click(); closeModal(document.getElementById('review-modal')); } });
+  })();
+</script>
+{% endblock %}

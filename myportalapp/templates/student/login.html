@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% load static %}
+{% comment %}
+  Student login (frontend mockup — no authentication).
+  Backend context: form (username/password fields), form.errors / non_field_errors, next URL, org.name, org.logo_url.
+  Demo: submit with an empty field, or type the password "wrong", to see error states.
+{% endcomment %}
+{% block title %}Student sign in{% endblock %}
+{% block role %}student{% endblock %}
+{% block layout %}
+<div class="login-shell">
+  <section class="login-panel">
+    <div class="login-card">
+      <div class="login-brand">
+        <img src="{% static 'images/logo-placeholder.svg' %}" alt="">
+        <div><strong>{{ org.name|default:"Meridian Training Institute" }}</strong><br><span class="text-muted text-sm">Certification Portal</span></div>
+      </div>
+      <h1>Welcome back</h1>
+      <p>Sign in to see your courses, attendance and certificates.</p>
+      <form data-validate data-cross="demoLoginCheck" data-success="Signed in" data-redirect="/portal/student/dashboard/" action="" method="post">
+        {% csrf_token %}
+        <div class="alert alert-error" role="alert" hidden><i data-lucide="circle-alert"></i><span>Enter your registration number or email and password to continue.</span></div>
+        <div class="stack" style="--gap:18px">
+          <div class="field">
+            <label for="username">Registration number or email <span class="req" aria-hidden="true">*</span></label>
+            <input class="input" id="username" name="username" type="text" autocomplete="username" required placeholder="e.g. MTI-2026-0142" data-error="Enter your registration number or email.">
+            <p class="error-text"><i data-lucide="circle-alert" style="width:14px;height:14px"></i><span></span></p>
+          </div>
+          <div class="field">
+            <div class="row-between"><label for="password">Password <span class="req" aria-hidden="true">*</span></label><a href="#" class="text-sm" data-demo-action="Password reset|Placeholder link: no email is sent.">Forgot password?</a></div>
+            <div class="input-group">
+              <input class="input" id="password" name="password" type="password" autocomplete="current-password" required minlength="4" data-error="Enter your password.">
+              <button type="button" class="icon-btn toggle-pw" data-toggle-password="password" aria-label="Show password"><i data-lucide="eye"></i></button>
+            </div>
+            <p class="error-text"><i data-lucide="circle-alert" style="width:14px;height:14px"></i><span></span></p>
+          </div>
+          <label class="check"><input type="checkbox" name="remember"> Remember me on this device</label>
+          <button class="btn btn-primary btn-block" type="submit" style="height:42px">Sign in</button>
+        </div>
+      </form>
+      <p class="login-switch">Are you an administrator? <a href="/portal/admin/login/">Go to admin sign in</a></p>
+    </div>
+  </section>
+  <aside class="login-aside" aria-hidden="true">
+    <h2>Your training record, in one place.</h2>
+    <p>See your attendance, follow your progress and download your certificates when you complete a course.</p>
+    <div class="login-seal"><i data-lucide="shield-check"></i><span>Certificates carry a unique number so employers can check them.</span></div>
+  </aside>
+</div>
+{% endblock %}

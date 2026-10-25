@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% load static %}
+{% comment %}
+Enrollment form. Backend: StudentForm + EnrollmentForm, courses (open for enrollment), generated registration number.
+{% endcomment %}
+{% block title %}Enroll student{% endblock %}
+{% block role %}admin{% endblock %}
+{% block nav_key %}students{% endblock %}
+{% block content %}
+<div class="page-head"><div><div class="breadcrumb"><a href="/portal/admin/students/">Students</a><span>/</span><span>Enroll student</span></div><h1>Enroll student</h1><p>Add a new student or enroll an existing one in a course. A registration number is generated when the record is saved.</p></div></div>
+<form class="card" data-validate data-success="Student enrolled" data-redirect="/portal/admin/students/" method="post" action="">
+  {% csrf_token %}
+  <div class="card-body">
+    <div class="alert alert-error" role="alert" hidden><i data-lucide="circle-alert"></i><span>Fix the highlighted fields before saving.</span></div>
+    <div class="form-section"><h2>Student</h2><p>Contact details used for the portal login and certificate.</p>
+      <div class="form-grid">
+        <div class="field"><label for="full_name">Full name <span class="req">*</span></label><input class="input" id="full_name" name="full_name" required data-error="Enter the student's full name as it should appear on the certificate."><p class="error-text"><i data-lucide="circle-alert" style="width:14px;height:14px"></i><span></span></p></div>
+        <div class="field"><label for="email">Email <span class="req">*</span></label><input class="input" id="email" name="email" type="email" required data-error="Enter a valid email address."><p class="error-text"><i data-lucide="circle-alert" style="width:14px;height:14px"></i><span></span></p></div>
+        <div class="field"><label for="phone">Phone</label><input class="input" id="phone" name="phone" type="tel" placeholder="+1 555 0100"></div>
+        <div class="field"><label for="reg">Registration number</label><input class="input" id="reg" value="MTI-2026-0143" readonly aria-describedby="reg-h"><span class="hint" id="reg-h">Generated automatically. Shown here as a placeholder.</span></div>
+      </div></div>
+    <div class="form-section"><h2>Enrollment</h2><p>Pick the course and the start of enrollment.</p>
+      <div class="form-grid">
+        <div class="field"><label for="course">Course <span class="req">*</span></label><select class="select" id="course" name="course" required data-error="Choose a course."><option value="">Select a course</option><option>Industrial Safety Fundamentals</option><option>Project Management Essentials</option><option>Data Analysis with Excel</option><option>Safety Leadership</option></select><p class="error-text"><i data-lucide="circle-alert" style="width:14px;height:14px"></i><span></span></p></div>
+        <div class="field"><label for="enroll_date">Enrollment date <span class="req">*</span></label><input class="input" id="enroll_date" name="enroll_date" type="date" required data-error="Choose the enrollment date."><p class="error-text"><i data-lucide="circle-alert" style="width:14px;height:14px"></i><span></span></p></div>
+      </div></div>
+    <div class="form-actions"><a class="btn" href="/portal/admin/students/">Cancel</a><button class="btn btn-primary" type="submit">Enroll student</button></div>
+  </div>
+</form>
+{% endblock %}

@@ -1,0 +1,8 @@
+{# Certificate preview modal. Include with modal_id and cert_type. Print uses the .print-target mechanism in main.js. #}
+<div class="modal-backdrop" id="{{ modal_id }}" hidden>
+  <div class="modal modal-lg" role="dialog" aria-modal="true" aria-labelledby="{{ modal_id }}-title">
+    <div class="modal-head"><div><h2 id="{{ modal_id }}-title">Certificate preview</h2><p class="text-muted text-sm">Sample layout. Not an officially issued document.</p></div><button class="icon-btn" data-modal-close aria-label="Close"><i data-lucide="x"></i></button></div>
+    <div class="modal-body"><div class="cert-stage" id="{{ modal_id }}-stage"><div class="cert-fit">{% include 'components/certificate_sheet.html' %}</div></div></div>
+    <div class="modal-foot"><button class="btn" data-modal-close>Close</button><button class="btn" data-demo-action="Download is a placeholder|Use Print, then Save as PDF, until the backend exists." data-toast-type="error"><i data-lucide="download"></i>Download</button><button class="btn btn-primary" data-print="#{{ modal_id }}-stage"><i data-lucide="printer"></i>Print</button></div>
+  </div>
+</div>

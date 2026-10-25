@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% load static %}
+{% comment %}
+Admin dashboard. Backend context needed:
+  stats (total_courses, active_students, enrolled_students, certificates_issued)
+  enrollment_trend (list of {month, count}) and certificate_type_counts ({completion, achievement}) -> pass via json_script
+  recent_enrollments, upcoming_sessions, pending_approvals. Everything below is DEMO data.
+{% endcomment %}
+{% block title %}Dashboard{% endblock %}
+{% block role %}admin{% endblock %}
+{% block nav_key %}dashboard{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>Dashboard</h1><p>Training activity across all courses.</p></div><span class="demo-note"><i data-lucide="flask-conical" style="width:14px;height:14px"></i>Demo data</span></div>
+<div class="grid grid-4">
+  <div class="card stat"><div class="stat-top"><span>Total courses</span><span class="stat-icon"><i data-lucide="book-open"></i></span></div><div class="stat-value mono">18</div><div class="stat-trend"><b>+2</b> this quarter</div></div>
+  <div class="card stat"><div class="stat-top"><span>Active students</span><span class="stat-icon"><i data-lucide="users"></i></span></div><div class="stat-value mono">246</div><div class="stat-trend"><b>+14</b> this month</div></div>
+  <div class="card stat"><div class="stat-top"><span>Enrolled students</span><span class="stat-icon"><i data-lucide="user-check"></i></span></div><div class="stat-value mono">312</div><div class="stat-trend">Across 9 running courses</div></div>
+  <div class="card stat"><div class="stat-top"><span>Certificates issued</span><span class="stat-icon"><i data-lucide="award"></i></span></div><div class="stat-value mono">187</div><div class="stat-trend"><b>+23</b> this month</div></div>
+</div>
+<div class="grid grid-main" style="margin-top:20px">
+  <section class="card"><div class="card-head"><div><h2>Enrollment trend</h2><p>New enrollments per month, 2026</p></div></div><div class="chart-box"><canvas id="enrollmentChart" role="img" aria-label="Line chart of monthly enrollments, rising from 18 in January to 52 in September"></canvas></div></section>
+  <section class="card"><div class="card-head"><div><h2>Certificate types</h2><p>Issued to date</p></div></div><div class="chart-box sm"><canvas id="typeChart" role="img" aria-label="Doughnut chart: 118 Completion and 69 Achievement certificates"></canvas></div></section>
+</div>
+<div class="grid grid-main" style="margin-top:20px">
+  <section class="card"><div class="card-head"><h2>Recent enrollments</h2><a class="btn btn-sm" href="/portal/admin/students/">View all students</a></div>
+    {# Backend: recent_enrollments queryset (student, course, created_at) #}
+    <div class="table-wrap"><table class="table table-compact"><thead><tr><th>Student</th><th>Course</th><th>Enrolled</th><th>Status</th></tr></thead><tbody><tr><td><div class="cell-main"><span class="avatar">PR</span><div><strong>Priya Raman</strong><small>MTI-2026-0142</small></div></div></td><td>Industrial Safety Fundamentals</td><td>Today</td><td><span class="badge badge-success">Enrolled</span></td></tr><tr><td><div class="cell-main"><span class="avatar">DO</span><div><strong>Daniel Okafor</strong><small>MTI-2026-0141</small></div></div></td><td>Project Management Essentials</td><td>Today</td><td><span class="badge badge-success">Enrolled</span></td></tr><tr><td><div class="cell-main"><span class="avatar">LF</span><div><strong>Lena Fischer</strong><small>MTI-2026-0140</small></div></div></td><td>Data Analysis with Excel</td><td>Yesterday</td><td><span class="badge badge-success">Enrolled</span></td></tr><tr><td><div class="cell-main"><span class="avatar">RS</span><div><strong>Ravi Shankar</strong><small>MTI-2026-0139</small></div></div></td><td>Safety Leadership</td><td>Yesterday</td><td><span class="badge badge-success">Enrolled</span></td></tr><tr><td><div class="cell-main"><span class="avatar">SA</span><div><strong>Sofia Alvarez</strong><small>MTI-2026-0138</small></div></div></td><td>Customer Service Excellence</td><td>2 days ago</td><td><span class="badge badge-success">Enrolled</span></td></tr></tbody></table></div></section>
+  <section class="card"><div class="card-head"><div><h2>Upcoming classes</h2><p>Next three sessions</p></div></div>{# Backend: upcoming_sessions #}<div class="list-row"><div class="date-tile"><span>Oct</span><b>23</b></div><div class="grow"><strong>Industrial Safety Fundamentals</strong><small>Day 4 of 5 · 09:00–15:00 · Room B</small></div></div><div class="list-row"><div class="date-tile"><span>Oct</span><b>24</b></div><div class="grow"><strong>Data Analysis with Excel</strong><small>Day 2 of 4 · 10:00–16:00 · Lab 2</small></div></div><div class="list-row"><div class="date-tile"><span>Oct</span><b>27</b></div><div class="grow"><strong>Project Management Essentials</strong><small>Day 1 of 3 · 09:00–16:00 · Room A</small></div></div></section>
+</div>
+<section class="card" style="margin-top:20px"><div class="card-head"><div><h2>Pending completion approvals</h2><p>Students who met the attendance and hours requirement</p></div><a class="btn btn-sm" href="/portal/admin/approvals/">Review all</a></div><div class="list-row"><span class="avatar">AB</span><div class="grow"><strong>Aisha Bello</strong><small>Industrial Safety Fundamentals · 96% attendance</small></div><button class="btn btn-sm btn-primary" data-demo-action="Approved|Demo only: nothing was approved.">Approve</button></div><div class="list-row"><span class="avatar">TB</span><div class="grow"><strong>Tom Becker</strong><small>Project Management Essentials · 91% attendance</small></div><button class="btn btn-sm btn-primary" data-demo-action="Approved|Demo only: nothing was approved.">Approve</button></div><div class="list-row"><span class="avatar">ML</span><div class="grow"><strong>Mei Lin</strong><small>Data Analysis with Excel · 88% attendance</small></div><button class="btn btn-sm btn-primary" data-demo-action="Approved|Demo only: nothing was approved.">Approve</button></div></section>
+{% endblock %}
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="{% static 'js/dashboard.js' %}"></script>
+{% endblock %}

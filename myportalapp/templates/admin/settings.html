@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% load static %}
+{% comment %}
+Settings. Backend: single OrganizationSettings instance; handle multipart upload for the logo. Currently a frontend mockup: file preview uses FileReader only.
+{% endcomment %}
+{% block title %}Organization settings{% endblock %}
+{% block role %}admin{% endblock %}
+{% block nav_key %}settings{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>Organization settings</h1><p>One name and logo are shared by every certificate and by the portal.</p></div></div>
+<div class="grid grid-main" style="align-items:start">
+<form class="card" data-validate data-success="Settings saved" novalidate method="post" action="" enctype="multipart/form-data">
+  {% csrf_token %}{# Backend: OrganizationSettings (name, logo, signatory_name, signatory_title, footer_text) #}
+  <div class="card-body">
+    <div class="alert alert-error" role="alert" hidden><i data-lucide="circle-alert"></i><span>Fix the highlighted fields before saving.</span></div>
+    <div class="form-section"><h2>Branding</h2><p>Shown in the sidebar, on login pages and at the top of certificates.</p>
+      <div class="stack" style="--gap:16px">
+        <div class="field"><label for="company">Company name <span class="req">*</span></label><input class="input" id="company" name="company" required value="Meridian Training Institute" data-bind="org" data-error="Enter the company name."><p class="error-text"><i data-lucide="circle-alert" style="width:14px;height:14px"></i><span></span></p></div>
+        <div class="field"><span class="label">Logo</span><div class="upload"><img data-logo-preview src="{% static 'images/logo-placeholder.svg' %}" alt="Current logo"><div><label class="btn btn-sm" for="logo" style="cursor:pointer"><i data-lucide="upload"></i>Choose image</label><input class="sr-only" type="file" id="logo" accept="image/*" data-logo-input><p class="hint" style="margin-top:6px">PNG, JPG or SVG. The preview stays in your browser; nothing is uploaded.</p></div></div></div>
+      </div></div>
+    <div class="form-section"><h2>Certificate signature</h2><p>The authorized signatory printed on every certificate.</p>
+      <div class="form-grid">
+        <div class="field"><label for="sig">Signatory name <span class="req">*</span></label><input class="input" id="sig" name="sig" required value="Dr. Helena Voss" data-bind="signatory_name" data-error="Enter the signatory's name."><p class="error-text"><i data-lucide="circle-alert" style="width:14px;height:14px"></i><span></span></p></div>
+        <div class="field"><label for="desig">Designation <span class="req">*</span></label><input class="input" id="desig" name="desig" required value="Director of Training" data-bind="signatory_title" data-error="Enter the signatory's designation."><p class="error-text"><i data-lucide="circle-alert" style="width:14px;height:14px"></i><span></span></p></div>
+        <div class="field full"><label for="footer">Certificate footer text</label><textarea class="textarea" id="footer" name="footer" maxlength="160" data-bind="footer">This certificate confirms participation in and completion of the listed training.</textarea><span class="hint">Up to 160 characters.</span></div>
+      </div></div>
+    <div class="form-actions"><button class="btn" type="reset">Reset</button><button class="btn btn-primary" type="submit">Save settings</button></div>
+  </div>
+</form>
+<section class="card"><div class="card-head"><div><h2>Certificate preview</h2><p>Sample layout with your branding</p></div></div><div class="card-body"><div class="cert-stage"><div class="cert-fit">{% include 'components/certificate_sheet.html' with cert_type='completion' %}</div></div></div></section>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script src="{% static 'js/certificates.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,37 @@
+{# Sidebar: one file, both roles. <body data-role> decides which group is visible (see style.css). #}
+{# Backend: replace hrefs with {% url %}; mark active link via <body data-nav="key"> (set in each page's nav_key block). #}
+<aside class="sidebar" id="sidebar" aria-label="Main navigation">
+  <div class="sidebar-brand">
+    <img src="{{ org.logo_url|default:'/static/images/logo-placeholder.svg' }}" alt="">
+    <div class="brand-name">{{ org.name|default:"Meridian Training" }}<small>Certification Portal</small></div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-group" data-role-group="admin">
+      <div class="nav-label">Overview</div>
+      <a class="nav-link" data-nav-key="dashboard" href="/portal/admin/dashboard/"><i data-lucide="layout-dashboard"></i><span>Dashboard</span></a>
+      <div class="nav-label" style="margin-top:18px">Training</div>
+      <a class="nav-link" data-nav-key="courses" href="/portal/admin/courses/"><i data-lucide="book-open"></i><span>Courses</span></a>
+      <a class="nav-link" data-nav-key="students" href="/portal/admin/students/"><i data-lucide="users"></i><span>Students</span></a>
+      <a class="nav-link" data-nav-key="attendance" href="/portal/admin/attendance/"><i data-lucide="calendar-check"></i><span>Attendance</span></a>
+      <a class="nav-link" data-nav-key="approvals" href="/portal/admin/approvals/"><i data-lucide="badge-check"></i><span>Completion approvals</span><em class="badge-count" style="font-style:normal">4</em></a>
+      <div class="nav-label" style="margin-top:18px">Certificates</div>
+      <a class="nav-link" data-nav-key="certificates" href="/portal/admin/certificates/"><i data-lucide="award"></i><span>Certificate center</span></a>
+      <a class="nav-link" data-nav-key="settings" href="/portal/admin/settings/"><i data-lucide="settings"></i><span>Organization settings</span></a>
+    </div>
+    <div class="nav-group" data-role-group="student">
+      <div class="nav-label">Learning</div>
+      <a class="nav-link" data-nav-key="dashboard" href="/portal/student/dashboard/"><i data-lucide="layout-dashboard"></i><span>Dashboard</span></a>
+      <a class="nav-link" data-nav-key="my-courses" href="/portal/student/courses/"><i data-lucide="book-open"></i><span>My courses</span></a>
+      <a class="nav-link" data-nav-key="my-attendance" href="/portal/student/attendance/"><i data-lucide="calendar-check"></i><span>My attendance</span></a>
+      <a class="nav-link" data-nav-key="my-certificates" href="/portal/student/certificates/"><i data-lucide="award"></i><span>My certificates</span></a>
+      <div class="nav-label" style="margin-top:18px">Account</div>
+      <a class="nav-link" data-nav-key="profile" href="/portal/student/profile/"><i data-lucide="user-round"></i><span>Profile</span></a>
+    </div>
+  </nav>
+  <div class="sidebar-foot">
+    <div class="user">
+      <span class="avatar" aria-hidden="true">{{ request.user.initials|default:"AM" }}</span>
+      <div><strong>{{ request.user.get_full_name|default:"Amara Mensah" }}</strong><span data-role-group="admin">Administrator</span><span data-role-group="student">Student</span></div>
+    </div>
+  </div>
+</aside>

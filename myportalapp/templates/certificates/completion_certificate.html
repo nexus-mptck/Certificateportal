@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% load static %}
+{% comment %}
+  Certificate of Completion — standalone printable page (A4 landscape). Print hides everything with .no-print.
+  Backend context: see components/certificate_sheet.html. Set is_official=True only for issued, non-revoked certificates;
+  otherwise a "Sample" watermark is shown so mock documents are never mistaken for official ones.
+{% endcomment %}
+{% block title %}Certificate of Completion{% endblock %}
+{% block layout %}
+<div class="cert-page">
+  <div class="cert-toolbar no-print">
+    <a class="btn" href="/portal/admin/certificates/"><i data-lucide="arrow-left"></i>Back</a>
+    <button class="btn btn-primary" data-print-page><i data-lucide="printer"></i>Print or save as PDF</button>
+  </div>
+  <div class="cert-stage" style="padding:0;background:none;border:0;width:100%;max-width:1123px"><div class="cert-fit">{% include 'components/certificate_sheet.html' with cert_type='completion' %}</div></div>
+  <p class="text-sm text-muted no-print">Sample certificate with placeholder content. Not an official document.</p>
+</div>
+{% endblock %}
+{% block extra_js %}<script src="{% static 'js/certificates.js' %}"></script>{% endblock %}

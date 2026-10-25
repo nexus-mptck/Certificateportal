@@ -1,0 +1,34 @@
+{% comment %}
+  Printable A4-landscape certificate sheet (shared by both certificate types).
+  Include with: {% include 'components/certificate_sheet.html' with cert_type='completion' %}   (or 'achievement')
+  Backend context (every value has a placeholder fallback so the template renders without data):
+    student_name, course_title, duration_days, duration_hours, completion_date, issue_date,
+    certificate_number, achievement_text (achievement only), org.name, org.logo_url,
+    signatory_name, signatory_title, footer_text, is_official (True only for issued, non-revoked certificates)
+  Elements with data-cert-field are updated by static/js/certificates.js for live previews.
+{% endcomment %}
+<div class="certificate{% if cert_type == 'achievement' %} achievement{% endif %}" data-cert-sheet>
+  <div class="frame"></div>
+  <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+  {% if not is_official %}<div class="cert-specimen" aria-hidden="true">Sample</div>{% endif %}
+  <div class="inner">
+    <div class="cert-org"><img data-logo-preview src="{{ org.logo_url|default:'/static/images/logo-placeholder.svg' }}" alt=""><span data-cert-field="org">{{ org.name|default:"Meridian Training Institute" }}</span></div>
+    <div class="cert-title" data-cert-field="title">{% if cert_type == 'achievement' %}Certificate of Achievement{% else %}Certificate of Completion{% endif %}</div>
+    <div class="cert-sub">This certificate is presented to</div>
+    <div class="cert-name" data-cert-field="name">{{ student_name|default:"Student Name" }}</div>
+    <p class="cert-text" data-cert-field="lead">{% if cert_type == 'achievement' %}in recognition of outstanding achievement in the course{% else %}for successfully completing the training course{% endif %}</p>
+    <div class="cert-course" data-cert-field="course">{{ course_title|default:"Course Title" }}</div>
+    {% if cert_type == 'achievement' %}<div class="cert-award" data-cert-field="award">{{ achievement_text|default:"Awarded for [achievement description placeholder]" }}</div>{% endif %}
+    <div class="cert-meta">
+      <div><span>Training duration</span><b data-cert-field="duration">{{ duration_days|default:"5" }} training days · {{ duration_hours|default:"30" }} training hours</b></div>
+      <div><span>Completion date</span><b data-cert-field="completed">{{ completion_date|default:"DD Month YYYY" }}</b></div>
+    </div>
+    <div class="cert-foot">
+      <div class="cert-sign"><div class="line" data-cert-field="signatory_name">{{ signatory_name|default:"Authorized Signatory" }}</div><strong data-cert-field="signatory_title">{{ signatory_title|default:"Director of Training" }}</strong>Authorized signatory</div>
+      <div class="cert-seal" aria-hidden="true"><i data-lucide="award"></i></div>
+      <div class="cert-sign"><div class="line" data-cert-field="issued">{{ issue_date|default:"DD Month YYYY" }}</div><strong>Date of issue</strong></div>
+    </div>
+    <div class="cert-footer-text" data-cert-field="footer">{{ footer_text|default:"This certificate confirms participation in and completion of the listed training." }}</div>
+  </div>
+  <div class="cert-number">Certificate no. <span data-cert-field="number">{{ certificate_number|default:"XXX-YYYY-NNNN" }}</span></div>
+</div>

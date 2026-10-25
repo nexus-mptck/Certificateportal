@@ -1,0 +1,5 @@
+{# Toast region. Call showToast(title, detail, 'success'|'error') from JS. Backend: render Django messages into data attributes if wanted. #}
+<div class="toast-region" id="toast-region" aria-live="polite"></div>
+{% comment %}
+  Future: {% for message in messages %}<div data-toast="{{ message.tags }}">{{ message }}</div>{% endfor %}
+{% endcomment %}

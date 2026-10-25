@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% load static %}
+{% comment %}
+Student dashboard. Backend: student (first_name, registration_number), enrollments with progress/attendance/completion status, recent_attendance (last 4), latest_certificate.
+{% endcomment %}
+{% block title %}Dashboard{% endblock %}
+{% block role %}student{% endblock %}
+{% block nav_key %}dashboard{% endblock %}
+{% block content %}
+<div class="page-head" style="margin-bottom:20px"><span class="demo-note"><i data-lucide="flask-conical" style="width:14px;height:14px"></i>Demo data</span></div>
+<section class="welcome"><div style="position:relative;z-index:1"><h1>Welcome back, {{ student.first_name|default:"Priya" }}</h1><p>You have one course in progress. Next class: Friday, 09:00.</p></div><div class="reg-pill"><small>Registration number</small><strong class="mono">{{ student.registration_number|default:"MTI-2026-0142" }}</strong></div></section>
+<h2 style="margin:26px 0 14px">Enrolled courses</h2>
+{# Backend: enrollments for request.user.student (course, duration_days, duration_hours, progress, attendance_percent, completion_status) #}
+<div class="grid grid-2">
+ <article class="card course-card" data-row data-status="in-progress"><header><div><h3>Industrial Safety Fundamentals</h3><span class="code">CRS-101</span></div><span class="badge badge-info">In progress</span></header><div class="meta-row"><span><i data-lucide="calendar-days"></i>5 training days</span><span><i data-lucide="clock"></i>30 training hours</span></div><div><div class="row-between text-sm"><span class="text-muted">Progress</span><b class="mono">35%</b></div><div class="progress" style="margin-top:6px"><span style="width:35%"></span></div></div><div class="row-between text-sm"><span class="text-muted">Attendance</span><b class="mono">75%</b></div></article>
+ <article class="card course-card" data-row data-status="completed"><header><div><h3>Basic First Aid</h3><span class="code">CRS-090</span></div><span class="badge badge-success">Completed</span></header><div class="meta-row"><span><i data-lucide="calendar-days"></i>1 training days</span><span><i data-lucide="clock"></i>8 training hours</span></div><div><div class="row-between text-sm"><span class="text-muted">Progress</span><b class="mono">100%</b></div><div class="progress is-complete" style="margin-top:6px"><span style="width:100%"></span></div></div><div class="row-between text-sm"><span class="text-muted">Attendance</span><b class="mono">100%</b></div><a class="btn btn-sm" href="/portal/student/certificates/"><i data-lucide="award"></i>View certificate</a></article>
+</div>
+<div class="grid grid-main" style="margin-top:20px">
+ <section class="card"><div class="card-head"><h2>Recent attendance</h2><a class="btn btn-sm" href="/portal/student/attendance/">Full history</a></div>
+  <div class="table-wrap"><table class="table table-compact"><thead><tr><th>Date</th><th>Topic</th><th>Status</th></tr></thead><tbody>
+   <tr><td class="mono">23 Oct</td><td>Workplace hazards</td><td><span class="badge badge-success">Present</span></td></tr>
+   <tr><td class="mono">22 Oct</td><td>Personal protective equipment</td><td><span class="badge badge-success">Present</span></td></tr>
+   <tr><td class="mono">21 Oct</td><td>Emergency procedures</td><td><span class="badge badge-danger">Absent</span></td></tr>
+   <tr><td class="mono">20 Oct</td><td>Course introduction</td><td><span class="badge badge-success">Present</span></td></tr></tbody></table></div></section>
+ <section class="card"><div class="card-head"><h2>Latest certificate</h2></div>
+  <div class="cert-mini"><div class="cert-thumb"></div><div><strong>Basic First Aid</strong><p class="text-sm text-muted">Completion · <span class="mono">MTI-2026-0071</span></p><a class="btn btn-sm" style="margin-top:10px" href="/portal/student/certificates/">Open</a></div></div></section>
+</div>
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% load static %}
+{% comment %}
+Backend: issued certificates (course, number, type, issue_date, file/preview). Download needs a real PDF endpoint later.
+{% endcomment %}
+{% block title %}My certificates{% endblock %}
+{% block role %}student{% endblock %}
+{% block nav_key %}my-certificates{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>My certificates</h1><p>Certificates you have earned. Print one or save it as a PDF.</p></div><span class="demo-note"><i data-lucide="flask-conical" style="width:14px;height:14px"></i>Sample certificate</span></div>
+{# Backend: certificates for the student with status == issued #}
+<div class="grid grid-3"><article class="card cert-card completion" data-row data-type="completion" data-name="Priya Raman" data-course="Basic First Aid" data-number="MTI-2026-0071" data-days="1" data-hours="8" data-completed="14 Mar 2026" data-issued="14 Mar 2026"><div class="cert-thumb"></div><div class="body"><div class="row-between"><h3>Basic First Aid</h3><span class="badge badge-info">Completion</span></div><p class="text-sm text-muted">Certificate no. <span class="mono">MTI-2026-0071</span><br>Issued 14 Mar 2026</p><div class="btns"><button class="btn btn-sm" data-cert-preview="cert-preview"><i data-lucide="eye"></i>Preview</button><button class="btn btn-sm" data-cert-preview="cert-preview" data-then-print><i data-lucide="printer"></i>Print</button><button class="btn btn-sm" data-demo-action="Download is a placeholder|Use Print, then Save as PDF, until the backend exists." data-toast-type="error"><i data-lucide="download"></i>Download</button></div></div></article></div>
+<div class="card" style="margin-top:20px"><div class="card-body row"><i data-lucide="info"></i><p class="text-muted">Finish your current course and wait for approval to receive your next certificate.</p></div></div>
+{% endblock %}
+{% block modals %}
+{% include 'components/certificate_modal.html' with modal_id='cert-preview' cert_type='completion' %}
+{% endblock %}
+{% block extra_js %}
+<script src="{% static 'js/certificates.js' %}"></script>
+<script>document.addEventListener("click",function(e){var b=e.target.closest("[data-then-print]");if(b)setTimeout(function(){document.querySelector("#cert-preview [data-print]").click()},120)});</script>
+{% endblock %}

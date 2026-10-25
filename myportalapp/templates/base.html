@@ -1,0 +1,47 @@
+{% load static %}
+{% comment %}
+  base.html — shared layout for every portal page.
+  Backend context expected (all optional; defaults are shown for the demo):
+    org.name, org.logo_url   -> organization branding (admin Settings)
+    request.user             -> display name / role for sidebar + topbar
+  Blocks: title, role ("admin" | "student"), nav_key, extra_css, layout, content, modals, extra_js
+  NOTE: nav links use plain /portal/... paths. Replace with {% url '...' %} when URLs exist.
+{% endcomment %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Portal{% endblock %} · {{ org.name|default:"Meridian Training Institute" }}</title>
+  <link rel="icon" href="{% static 'images/logo-placeholder.svg' %}" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,500&family=Geist:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+  <link rel="stylesheet" href="{% static 'css/forms.css' %}">
+  <link rel="stylesheet" href="{% static 'css/tables.css' %}">
+  <link rel="stylesheet" href="{% static 'css/certificates.css' %}">
+  {% block extra_css %}{% endblock %}
+</head>
+<body data-role="{% block role %}admin{% endblock %}" data-nav="{% block nav_key %}{% endblock %}">
+{% block layout %}
+  <a class="skip-link" href="#main">Skip to content</a>
+  <div class="app">
+    {% include 'components/sidebar.html' %}
+    <div class="scrim" data-sidebar-toggle></div>
+    <div class="main">
+      {% include 'components/topbar.html' %}
+      <main id="main" class="content">
+        {% block content %}{% endblock %}
+      </main>
+    </div>
+  </div>
+{% endblock %}
+  {% block modals %}{% endblock %}
+  {% include 'components/notifications.html' %}
+  <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+  <script src="{% static 'js/main.js' %}"></script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

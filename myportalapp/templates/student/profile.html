@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% load static %}
+{% comment %}
+Backend: student profile + password change form. Account settings here are frontend-only.
+{% endcomment %}
+{% block title %}Profile{% endblock %}
+{% block role %}student{% endblock %}
+{% block nav_key %}profile{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>Profile</h1><p>Your details and account settings.</p></div></div>
+<div class="grid grid-main" style="align-items:start">
+ <section class="card"><div class="card-head"><h2>Personal information</h2></div><div class="card-body">
+  <div class="row" style="--gap:16px;margin-bottom:22px"><span class="avatar avatar-lg">PR</span><div><strong style="font-size:16px">Priya Raman</strong><p class="text-muted">Registration no. <b class="mono">MTI-2026-0142</b></p></div></div>
+  <dl class="kv"><dt>Email</dt><dd>priya.raman@example.com</dd><dt>Phone</dt><dd>+1 555 0142</dd><dt>Enrolled since</dt><dd>12 Mar 2026</dd></dl>
+  <p class="hint" style="margin-top:16px">To change your name or registration number, contact your administrator.</p></div></section>
+ <form class="card" data-validate data-success="Password updated" novalidate method="post" action="">
+  {% csrf_token %}
+  <div class="card-head"><h2>Change password</h2></div><div class="card-body stack" style="--gap:16px">
+   <div class="alert alert-error" role="alert" hidden><i data-lucide="circle-alert"></i><span>Fix the highlighted fields before saving.</span></div>
+   <div class="field"><label for="cur">Current password <span class="req">*</span></label><input class="input" id="cur" type="password" required autocomplete="current-password" data-error="Enter your current password."><p class="error-text"><i data-lucide="circle-alert" style="width:14px;height:14px"></i><span></span></p></div>
+   <div class="field"><label for="new">New password <span class="req">*</span></label><input class="input" id="new" type="password" required minlength="8" autocomplete="new-password" data-error="Use at least 8 characters."><p class="error-text"><i data-lucide="circle-alert" style="width:14px;height:14px"></i><span></span></p></div>
+   <label class="switch"><input type="checkbox" checked><span class="track"></span><span>Email me when a certificate is issued</span></label>
+   <div class="form-actions" style="margin:0"><button class="btn btn-primary" type="submit">Update password</button></div></div></form>
+</div>
+{% endblock %}
