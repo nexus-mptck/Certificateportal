@@ -33,6 +33,27 @@ DEBUG = os.environ.get('DEBUG', 'True').strip().lower() in ('1', 'true', 'yes', 
 
 ALLOWED_HOSTS = [h.strip() for h in os.environ.get('ALLOWED_HOSTS', '').split(',') if h.strip()]
 
+# Automatically support Render hostnames and local development
+RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
+if RENDER_EXTERNAL_HOSTNAME and RENDER_EXTERNAL_HOSTNAME not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
+
+for default_host in ['localhost', '127.0.0.1', '.onrender.com', 'certificateportal.onrender.com']:
+    if default_host not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append(default_host)
+
+# CSRF configuration for Render HTTPS
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.onrender.com',
+    'https://certificateportal.onrender.com',
+]
+if RENDER_EXTERNAL_HOSTNAME:
+    origin = f'https://{RENDER_EXTERNAL_HOSTNAME}'
+    if origin not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append(origin)
+
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 
 # Application definition
 
