@@ -1,18 +1,79 @@
 {% extends 'base.html' %}
 {% load static %}
-{% comment %}
-Backend: attendance_records + totals. Search and status filters are client-side demo.
-{% endcomment %}
 {% block title %}My attendance{% endblock %}
 {% block role %}student{% endblock %}
 {% block nav_key %}my-attendance{% endblock %}
 {% block content %}
-<div class="page-head"><div><h1>My attendance</h1><p>Your attendance record for every class.</p></div></div>
-<div class="summary-strip" style="margin-bottom:20px"><div><strong class="mono">4</strong><span>Present</span></div><div><strong class="mono">1</strong><span>Absent</span></div><div><strong class="mono">1</strong><span>Leave</span></div><div><strong class="mono">67%</strong><span>Attendance</span></div></div>
+<div class="page-head">
+  <div>
+    <h1>My attendance</h1>
+    <p>Your recorded attendance and hours for each training session.</p>
+  </div>
+</div>
+
+<div class="summary-strip" style="margin-bottom:20px">
+  <div><strong class="mono">{{ present_count }}</strong><span>Present</span></div>
+  <div><strong class="mono">{{ absent_count }}</strong><span>Absent</span></div>
+  <div><strong class="mono">{{ leave_count }}</strong><span>On leave</span></div>
+  <div><strong class="mono">{{ rate }}%</strong><span>Attendance rate</span></div>
+</div>
+
 <section class="card" data-filter-scope>
- <div class="toolbar"><label class="search"><span class="sr-only">Search attendance</span><i data-lucide="search"></i><input class="input" type="search" data-search placeholder="Search by date or topic"></label>
- <div class="chip-row" role="group" aria-label="Status"><button class="chip" data-chip="all" aria-pressed="true">All</button><button class="chip" data-chip="present" aria-pressed="false">Present</button><button class="chip" data-chip="absent" aria-pressed="false">Absent</button><button class="chip" data-chip="leave" aria-pressed="false">Leave</button></div></div>
- {# Backend: attendance_records for the student (date, topic, status, hours); summary totals #}
- <div class="table-wrap"><table class="table"><thead><tr><th>Date</th><th>Topic</th><th>Status</th><th>Hours</th></tr></thead><tbody><tr data-row data-status="present"><td class="mono">23 Oct 2026</td><td>Workplace hazards</td><td><span class="badge badge-success">Present</span></td><td class="mono">6 hrs</td></tr><tr data-row data-status="present"><td class="mono">22 Oct 2026</td><td>Personal protective equipment</td><td><span class="badge badge-success">Present</span></td><td class="mono">6 hrs</td></tr><tr data-row data-status="absent"><td class="mono">21 Oct 2026</td><td>Emergency procedures</td><td><span class="badge badge-danger">Absent</span></td><td class="mono">0 hrs</td></tr><tr data-row data-status="present"><td class="mono">20 Oct 2026</td><td>Course introduction</td><td><span class="badge badge-success">Present</span></td><td class="mono">6 hrs</td></tr><tr data-row data-status="present"><td class="mono">12 Mar 2026</td><td>First aid practice</td><td><span class="badge badge-success">Present</span></td><td class="mono">8 hrs</td></tr><tr data-row data-status="leave"><td class="mono">11 Mar 2026</td><td>First aid theory</td><td><span class="badge badge-warning">Leave</span></td><td class="mono">0 hrs</td></tr></tbody></table></div>
- <div class="empty"><strong>No classes found</strong>Try a different date or topic.</div></section>
+  <div class="toolbar">
+    <label class="search">
+      <span class="sr-only">Search attendance</span>
+      <i data-lucide="search"></i>
+      <input class="input" type="search" data-search placeholder="Search by date or topic">
+    </label>
+    <div class="chip-row" role="group" aria-label="Status">
+      <button class="chip" data-chip="all" aria-pressed="true">All</button>
+      <button class="chip" data-chip="present" aria-pressed="false">Present</button>
+      <button class="chip" data-chip="absent" aria-pressed="false">Absent</button>
+      <button class="chip" data-chip="leave" aria-pressed="false">Leave</button>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Course & Topic</th>
+          <th>Status</th>
+          <th>Hours credited</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for rec in records %}
+          <tr data-row data-status="{{ rec.status }}">
+            <td class="mono">{{ rec.session.date|date:"d M Y" }}</td>
+            <td>
+              <strong>{{ rec.session.course.name }}</strong>
+              <small style="display:block;color:var(--text-3)">{{ rec.session.topic }}</small>
+            </td>
+            <td>
+              <span class="badge {% if rec.status == 'present' %}badge-success{% elif rec.status == 'absent' %}badge-danger{% else %}badge-warning{% endif %}">
+                {{ rec.get_status_display }}
+              </span>
+            </td>
+            <td class="mono">
+              {% if rec.status == 'present' %}
+                {{ rec.session.actual_hours }} hrs
+              {% else %}
+                0 hrs
+              {% endif %}
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="4" style="text-align:center;padding:36px;color:var(--text-3)">
+              No attendance records logged yet.
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="empty"><strong>No classes found</strong>Try a different date or topic.</div>
+</section>
 {% endblock %}

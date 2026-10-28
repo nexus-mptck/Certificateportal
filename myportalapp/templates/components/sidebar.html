@@ -1,8 +1,7 @@
 {# Sidebar: one file, both roles. <body data-role> decides which group is visible (see style.css). #}
-{# Backend: replace hrefs with {% url %}; mark active link via <body data-nav="key"> (set in each page's nav_key block). #}
 <aside class="sidebar" id="sidebar" aria-label="Main navigation">
   <div class="sidebar-brand">
-    <img src="{{ org.logo_url|default:'/static/images/logo-placeholder.svg' }}" alt="">
+    <img src="{{ org.logo_url|default:'/static/images/logo-placeholder.svg' }}" alt="Logo">
     <div class="brand-name">{{ org.name|default:"Meridian Training" }}<small>Certification Portal</small></div>
   </div>
   <nav class="sidebar-nav">
@@ -13,7 +12,7 @@
       <a class="nav-link" data-nav-key="courses" href="/portal/admin/courses/"><i data-lucide="book-open"></i><span>Courses</span></a>
       <a class="nav-link" data-nav-key="students" href="/portal/admin/students/"><i data-lucide="users"></i><span>Students</span></a>
       <a class="nav-link" data-nav-key="attendance" href="/portal/admin/attendance/"><i data-lucide="calendar-check"></i><span>Attendance</span></a>
-      <a class="nav-link" data-nav-key="approvals" href="/portal/admin/approvals/"><i data-lucide="badge-check"></i><span>Completion approvals</span><em class="badge-count" style="font-style:normal">4</em></a>
+      <a class="nav-link" data-nav-key="approvals" href="/portal/admin/approvals/"><i data-lucide="badge-check"></i><span>Completion approvals</span>{% if pending_approvals_count %}<em class="badge-count" style="font-style:normal">{{ pending_approvals_count }}</em>{% endif %}</a>
       <div class="nav-label" style="margin-top:18px">Certificates</div>
       <a class="nav-link" data-nav-key="certificates" href="/portal/admin/certificates/"><i data-lucide="award"></i><span>Certificate center</span></a>
       <a class="nav-link" data-nav-key="settings" href="/portal/admin/settings/"><i data-lucide="settings"></i><span>Organization settings</span></a>
@@ -30,8 +29,12 @@
   </nav>
   <div class="sidebar-foot">
     <div class="user">
-      <span class="avatar" aria-hidden="true">{{ request.user.initials|default:"AM" }}</span>
-      <div><strong>{{ request.user.get_full_name|default:"Amara Mensah" }}</strong><span data-role-group="admin">Administrator</span><span data-role-group="student">Student</span></div>
+      <span class="avatar" aria-hidden="true">{{ request.user.initials|default:"US" }}</span>
+      <div>
+        <strong>{{ request.user.get_full_name|default:request.user.username|default:"User" }}</strong>
+        <span data-role-group="admin">Administrator</span>
+        <span data-role-group="student">Student</span>
+      </div>
     </div>
   </div>
 </aside>

@@ -1,19 +1,27 @@
 {% extends 'base.html' %}
 {% load static %}
-{% comment %}
-  Certificate of Achievement — standalone printable page (A4 landscape). Print hides everything with .no-print.
-  Backend context: see components/certificate_sheet.html. Set is_official=True only for issued, non-revoked certificates;
-  otherwise a "Sample" watermark is shown so mock documents are never mistaken for official ones.
-{% endcomment %}
-{% block title %}Certificate of Achievement{% endblock %}
+{% block title %}Certificate of Achievement - {{ certificate_number }}{% endblock %}
 {% block layout %}
 <div class="cert-page">
   <div class="cert-toolbar no-print">
-    <a class="btn" href="/portal/admin/certificates/"><i data-lucide="arrow-left"></i>Back</a>
+    <button class="btn" onclick="window.history.back()"><i data-lucide="arrow-left"></i>Back</button>
     <button class="btn btn-primary" data-print-page><i data-lucide="printer"></i>Print or save as PDF</button>
+    {% if certificate %}
+      <a class="btn" href="/portal/certificates/{{ certificate.certificate_number }}/download/"><i data-lucide="download"></i>Download official PDF</a>
+    {% endif %}
   </div>
-  <div class="cert-stage" style="padding:0;background:none;border:0;width:100%;max-width:1123px"><div class="cert-fit">{% include 'components/certificate_sheet.html' with cert_type='achievement' %}</div></div>
-  <p class="text-sm text-muted no-print">Sample certificate with placeholder content. Not an official document.</p>
+  <div class="cert-stage" style="padding:0;background:none;border:0;width:100%;max-width:1123px">
+    <div class="cert-fit">
+      {% include 'components/certificate_sheet.html' with cert_type='achievement' %}
+    </div>
+  </div>
+  <p class="text-sm text-muted no-print">
+    {% if is_official %}
+      Official certificate issued by {{ org.name|default:"Meridian Training Institute" }}.
+    {% else %}
+      Sample certificate specimen.
+    {% endif %}
+  </p>
 </div>
 {% endblock %}
 {% block extra_js %}<script src="{% static 'js/certificates.js' %}"></script>{% endblock %}

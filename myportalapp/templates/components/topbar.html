@@ -1,29 +1,48 @@
-{# Topbar: title is filled from the page <title> by main.js; the search box filters nothing globally (demo). #}
+{# Topbar: title is filled from the page <title> by main.js #}
 <header class="topbar">
   <button class="icon-btn menu-toggle-mobile" data-sidebar-toggle aria-label="Open menu" aria-controls="sidebar" aria-expanded="false"><i data-lucide="menu"></i></button>
   <button class="icon-btn menu-toggle-desktop" data-sidebar-toggle aria-label="Collapse sidebar" aria-controls="sidebar"><i data-lucide="panel-left"></i></button>
   <span class="topbar-title" id="topbar-title">{% block topbar_title %}{{ page_title|default:"Portal" }}{% endblock %}</span>
-  <label class="topbar-search"><span class="sr-only">Search</span><i data-lucide="search"></i><input type="search" placeholder="Search the portal"></label>
+  <label class="topbar-search"><span class="sr-only">Search</span><i data-lucide="search"></i><input type="search" placeholder="Search the portal" aria-label="Search"></label>
   <div class="topbar-actions">
     <div class="dropdown">
-      <button class="icon-btn" data-dropdown aria-haspopup="true" aria-expanded="false" aria-label="Notifications"><i data-lucide="bell"></i><span class="dot"></span></button>
-      <div class="dropdown-menu" hidden style="min-width:300px">
-        <div class="dropdown-head"><strong>Notifications</strong><br><small>Demo data</small></div>
-        <div class="notif-item"><i data-lucide="badge-check"></i><div><p>4 completions are waiting for approval</p><small>10 min ago</small></div></div>
-        <div class="notif-item"><i data-lucide="user-plus"></i><div><p>Ravi Shankar enrolled in Safety Leadership</p><small>2 h ago</small></div></div>
-        <div class="notif-item"><i data-lucide="award"></i><div><p>Certificate NTI-2026-0142 was issued</p><small>Yesterday</small></div></div>
+      <button class="icon-btn" data-dropdown aria-haspopup="true" aria-expanded="false" aria-label="Notifications">
+        <i data-lucide="bell"></i>
+        {% if pending_approvals_count %}<span class="dot"></span>{% endif %}
+      </button>
+      <div class="dropdown-menu" hidden style="min-width:280px">
+        <div class="dropdown-head"><strong>Notifications</strong></div>
+        {% if pending_approvals_count %}
+          <a class="dropdown-item notif-item" href="/portal/admin/approvals/">
+            <i data-lucide="badge-check"></i>
+            <div>
+              <p>{{ pending_approvals_count }} completion{{ pending_approvals_count|pluralize }} awaiting approval</p>
+              <small>Review now</small>
+            </div>
+          </a>
+        {% else %}
+          <div style="padding:12px;font-size:13px;color:var(--text-3);text-align:center">No new notifications</div>
+        {% endif %}
       </div>
     </div>
     <div class="dropdown">
       <button class="btn btn-ghost" data-dropdown aria-haspopup="true" aria-expanded="false" style="padding:0 6px">
-        <span class="avatar" aria-hidden="true">{{ request.user.initials|default:"AM" }}</span><span class="sr-only">Account menu</span><i data-lucide="chevron-down"></i>
+        <span class="avatar" aria-hidden="true">{{ request.user.initials|default:"US" }}</span>
+        <span class="sr-only">Account menu</span>
+        <i data-lucide="chevron-down"></i>
       </button>
       <div class="dropdown-menu" hidden>
-        <div class="dropdown-head"><strong>{{ request.user.get_full_name|default:"Amara Mensah" }}</strong><br><small>{{ request.user.email|default:"amara@example.com" }}</small></div>
-        <a class="dropdown-item" data-role-group="admin" href="/portal/admin/settings/"><i data-lucide="settings"></i>Settings</a>
-        <a class="dropdown-item" data-role-group="student" href="/portal/student/profile/"><i data-lucide="user-round"></i>My profile</a>
-        <a class="dropdown-item" data-role-group="admin" href="/portal/admin/login/"><i data-lucide="log-out"></i>Sign out</a>
-        <a class="dropdown-item" data-role-group="student" href="/portal/student/login/"><i data-lucide="log-out"></i>Sign out</a>
+        <div class="dropdown-head">
+          <strong>{{ request.user.get_full_name|default:request.user.username|default:"User" }}</strong>
+          {% if request.user.email %}<br><small>{{ request.user.email }}</small>{% endif %}
+        </div>
+        {% if user_is_admin %}
+          <a class="dropdown-item" href="/portal/admin/settings/"><i data-lucide="settings"></i>Settings</a>
+        {% endif %}
+        {% if user_is_student %}
+          <a class="dropdown-item" href="/portal/student/profile/"><i data-lucide="user-round"></i>My profile</a>
+        {% endif %}
+        <a class="dropdown-item" href="/portal/logout/"><i data-lucide="log-out"></i>Sign out</a>
       </div>
     </div>
   </div>

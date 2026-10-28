@@ -109,13 +109,24 @@
       el.addEventListener('input', function () { if (el.closest('.field.has-error')) validateField(el); });
     });
     form.addEventListener('submit', function (e) {
-      e.preventDefault(); var bad = null;
+      var bad = null;
       $$('input,select,textarea', form).forEach(function (el) { if (!validateField(el) && !bad) bad = el; });
       var cross = form.getAttribute('data-cross'); if (!bad && cross && window[cross]) { bad = window[cross](form) || null; }
-      if (bad) { bad.focus && bad.focus(); var a = $('.alert-error', form); if (a) a.hidden = false; return; }
+      if (bad) {
+        e.preventDefault();
+        bad.focus && bad.focus();
+        var a = $('.alert-error', form);
+        if (a) a.hidden = false;
+        return;
+      }
       var a2 = $('.alert-error', form); if (a2) a2.hidden = true;
-      var ok = form.getAttribute('data-success'); showToast(ok || 'Saved', 'Demo only: nothing was stored.');
-      var go = form.getAttribute('data-redirect'); if (go) setTimeout(function () { location.href = go; }, 900);
+      if (form.getAttribute('data-demo-only') === 'true') {
+        e.preventDefault();
+        var ok = form.getAttribute('data-success');
+        showToast(ok || 'Saved', '');
+        var go = form.getAttribute('data-redirect');
+        if (go) setTimeout(function () { location.href = go; }, 800);
+      }
     });
   });
 
@@ -146,14 +157,23 @@
     var row = b.closest('[data-row]');
     if (b.hasAttribute('data-remove-row') && row) { row.hidden = true; }
     if (b.hasAttribute('data-set-status') && row) { var s = $('[data-status-badge]', row); if (s) { s.className = 'badge ' + b.getAttribute('data-badge-class'); s.textContent = b.getAttribute('data-set-status'); } row.setAttribute('data-status', b.getAttribute('data-set-status').toLowerCase()); $$('[data-row-action]', row).forEach(function (x) { x.disabled = true; }); }
-    showToast(p[0], p[1] || 'Demo only: nothing was saved.', b.getAttribute('data-toast-type') || 'success');
+    showToast(p[0], p[1] || '', b.getAttribute('data-toast-type') || 'success');
     var m = b.closest('.modal-backdrop'); if (m) closeModal(m);
   });
 
-  /* Login demo: show error on empty or demo "wrong" password */
+  /* Display server-sent Django messages */
+  $$('[data-django-message]').forEach(function (el) {
+    var tag = el.getAttribute('data-django-message') || 'info';
+    var text = el.textContent.trim();
+    if (text) {
+      var toastType = (tag.indexOf('error') > -1) ? 'error' : 'success';
+      showToast(text, '', toastType);
+    }
+  });
+
+  /* Login check stub (server validates credentials) */
   window.demoLoginCheck = function (form) {
-    var pw = form.querySelector('[type=password]');
-    if (pw && pw.value === 'wrong') { var a = $('.alert-error', form); a.hidden = false; $('span', a).textContent = 'The username or password is incorrect. Check both and try again.'; return pw; }
+    return null;
   };
 
   /* Print helper */

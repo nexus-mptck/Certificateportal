@@ -1,29 +1,161 @@
 {% extends 'base.html' %}
 {% load static %}
-{% comment %}
-Daily attendance. Backend: POST handler for attendance rows (student_id, status), session details; this page keeps all state client-side in the radio inputs.
-{% endcomment %}
 {% block title %}Attendance{% endblock %}
 {% block role %}admin{% endblock %}
 {% block nav_key %}attendance{% endblock %}
 {% block content %}
-<div class="page-head"><div><h1>Attendance</h1><p>Record who attended today's class. Attendance percentage updates as you mark students.</p></div><span class="demo-note"><i data-lucide="flask-conical" style="width:14px;height:14px"></i>Sample roster</span></div>
+<div class="page-head">
+  <div>
+    <h1>Attendance</h1>
+    <p>Record daily attendance for training sessions. Attendance percentages and completion statuses update automatically.</p>
+  </div>
+</div>
+
 <form id="attendance-form" novalidate method="post" action="">
   {% csrf_token %}
-  {# Backend: courses, selected_course, session (date, topic, planned_hours, actual_hours, completed), roster (student, status, overall_attendance_percent) #}
-  <section class="card"><div class="card-body"><div class="form-grid" style="grid-template-columns:repeat(3,minmax(0,1fr))">
-    <div class="field"><label for="course-select">Course</label><select class="select" id="course-select"><option>Industrial Safety Fundamentals</option><option>Project Management Essentials</option><option>Data Analysis with Excel</option></select></div>
-    <div class="field"><label for="date-select">Date</label><input class="input" type="date" id="date-select" value="2026-10-24"></div>
-    <div class="field"><label for="planned-hours">Planned hours</label><input class="input" id="planned-hours" type="number" value="6" readonly></div>
-    <div class="field" style="grid-column:span 2"><label for="topic">Class topic <span class="req">*</span></label><input class="input" id="topic" value="Hazard identification and risk assessment"><p class="error-text"><i data-lucide="circle-alert" style="width:14px;height:14px"></i><span>Enter the topic covered in this class.</span></p></div>
-    <div class="field"><label for="actual-hours">Actual hours</label><input class="input" id="actual-hours" type="number" min="0" max="12" step="0.5" value="6"><p class="error-text"><i data-lucide="circle-alert" style="width:14px;height:14px"></i><span>Enter the hours taught.</span></p></div>
-    <div class="field full"><label class="switch"><input type="checkbox" id="class-done" checked><span class="track"></span><span>Class completed as planned</span></label></div>
-  </div></div></section>
+  <section class="card">
+    <div class="card-body">
+      <div class="form-grid" style="grid-template-columns:repeat(3,minmax(0,1fr))">
+        <div class="field">
+          <label for="course-select">Course</label>
+          <select class="select" id="course-select" name="course_id">
+            {% for c in courses %}
+              <option value="{{ c.id }}" {% if selected_course.id == c.id %}selected{% endif %}>
+                {{ c.name }} ({{ c.code }})
+              </option>
+            {% empty %}
+              <option value="">No courses available</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="field">
+          <label for="date-select">Date</label>
+          <input class="input" type="date" id="date-select" name="date" value="{{ selected_date }}">
+        </div>
+        <div class="field">
+          <label for="planned-hours">Planned hours</label>
+          <input class="input" id="planned-hours" name="planned_hours" type="number" step="0.5"
+                 value="{% if session %}{{ session.planned_hours }}{% elif selected_course %}{{ selected_course.duration_hours }}{% else %}{{ planned_hours|default:'6.0' }}{% endif %}">
+        </div>
+        <div class="field" style="grid-column:span 2">
+          <label for="topic">Class topic <span class="req">*</span></label>
+          <input class="input" id="topic" name="topic" required
+                 value="{{ session.topic|default:'Daily training session' }}"
+                 placeholder="e.g. Workplace Hazard Identification">
+          <p class="error-text">
+            <i data-lucide="circle-alert" style="width:14px;height:14px"></i>
+            <span>Enter the topic covered in this class.</span>
+          </p>
+        </div>
+        <div class="field">
+          <label for="actual-hours">Actual hours</label>
+          <input class="input" id="actual-hours" name="actual_hours" type="number" min="0" max="24" step="0.5"
+                 value="{{ session.actual_hours|default:'6.0' }}">
+          <p class="error-text">
+            <i data-lucide="circle-alert" style="width:14px;height:14px"></i>
+            <span>Enter the hours taught.</span>
+          </p>
+        </div>
+        <div class="field full">
+          <label class="switch">
+            <input type="checkbox" id="class-done" name="class_done" {% if session.is_completed or not session %}checked{% endif %}>
+            <span class="track"></span>
+            <span>Class completed as planned</span>
+          </label>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <section class="card" style="margin-top:20px" id="attendance-card">
-    <div class="card-head"><div><h2>Student attendance</h2><p>Day 4 of 5 · Overall percentage shows each student's course total</p></div><button type="button" class="btn btn-sm" id="mark-all-present"><i data-lucide="check-check"></i>Mark all present</button></div>
-    <div class="card-body" style="border-bottom:1px solid var(--border)"><div class="summary-strip"><div><strong id="sum-present" class="mono">0</strong><span>Present</span></div><div><strong id="sum-absent" class="mono">0</strong><span>Absent</span></div><div><strong id="sum-leave" class="mono">0</strong><span>On leave</span></div><div><strong id="sum-rate" class="mono">0%</strong><span>Today's attendance</span><div class="progress" style="margin-top:6px"><span id="rate-bar" style="width:0"></span></div></div></div></div>
-    <div class="table-wrap"><table class="table" id="attendance-table"><thead><tr><th>Student</th><th>Status</th><th>Overall attendance</th></tr></thead><tbody><tr data-row><td><div class="cell-main"><span class="avatar">PR</span><div><strong>Priya Raman</strong><small class="mono">MTI-2026-0142</small></div></div></td><td><fieldset class="att-toggle" style="border:0;padding:0;margin:0" aria-label="Attendance for Priya Raman"><label><input type="radio" name="att-0" value="present" checked><span>Present</span></label><label><input type="radio" name="att-0" value="absent"><span>Absent</span></label><label><input type="radio" name="att-0" value="leave"><span>Leave</span></label></fieldset></td><td style="min-width:150px"><div class="progress-cell"><div class="progress"><span style="width:75%"></span></div><small class="mono">75%</small></div></td></tr><tr data-row><td><div class="cell-main"><span class="avatar">AB</span><div><strong>Aisha Bello</strong><small class="mono">MTI-2026-0137</small></div></div></td><td><fieldset class="att-toggle" style="border:0;padding:0;margin:0" aria-label="Attendance for Aisha Bello"><label><input type="radio" name="att-1" value="present" checked><span>Present</span></label><label><input type="radio" name="att-1" value="absent"><span>Absent</span></label><label><input type="radio" name="att-1" value="leave"><span>Leave</span></label></fieldset></td><td style="min-width:150px"><div class="progress-cell"><div class="progress"><span style="width:96%"></span></div><small class="mono">96%</small></div></td></tr><tr data-row><td><div class="cell-main"><span class="avatar">TB</span><div><strong>Tom Becker</strong><small class="mono">MTI-2026-0136</small></div></div></td><td><fieldset class="att-toggle" style="border:0;padding:0;margin:0" aria-label="Attendance for Tom Becker"><label><input type="radio" name="att-2" value="present" checked><span>Present</span></label><label><input type="radio" name="att-2" value="absent"><span>Absent</span></label><label><input type="radio" name="att-2" value="leave"><span>Leave</span></label></fieldset></td><td style="min-width:150px"><div class="progress-cell"><div class="progress"><span style="width:91%"></span></div><small class="mono">91%</small></div></td></tr><tr data-row><td><div class="cell-main"><span class="avatar">ML</span><div><strong>Mei Lin</strong><small class="mono">MTI-2026-0135</small></div></div></td><td><fieldset class="att-toggle" style="border:0;padding:0;margin:0" aria-label="Attendance for Mei Lin"><label><input type="radio" name="att-3" value="present" checked><span>Present</span></label><label><input type="radio" name="att-3" value="absent"><span>Absent</span></label><label><input type="radio" name="att-3" value="leave"><span>Leave</span></label></fieldset></td><td style="min-width:150px"><div class="progress-cell"><div class="progress"><span style="width:88%"></span></div><small class="mono">88%</small></div></td></tr><tr data-row><td><div class="cell-main"><span class="avatar">CD</span><div><strong>Carlos Duarte</strong><small class="mono">MTI-2026-0134</small></div></div></td><td><fieldset class="att-toggle" style="border:0;padding:0;margin:0" aria-label="Attendance for Carlos Duarte"><label><input type="radio" name="att-4" value="present"><span>Present</span></label><label><input type="radio" name="att-4" value="absent" checked><span>Absent</span></label><label><input type="radio" name="att-4" value="leave"><span>Leave</span></label></fieldset></td><td style="min-width:150px"><div class="progress-cell"><div class="progress"><span style="width:62%"></span></div><small class="mono">62%</small></div></td></tr><tr data-row><td><div class="cell-main"><span class="avatar">HW</span><div><strong>Hannah Weiss</strong><small class="mono">MTI-2026-0133</small></div></div></td><td><fieldset class="att-toggle" style="border:0;padding:0;margin:0" aria-label="Attendance for Hannah Weiss"><label><input type="radio" name="att-5" value="present" checked><span>Present</span></label><label><input type="radio" name="att-5" value="absent"><span>Absent</span></label><label><input type="radio" name="att-5" value="leave"><span>Leave</span></label></fieldset></td><td style="min-width:150px"><div class="progress-cell"><div class="progress"><span style="width:84%"></span></div><small class="mono">84%</small></div></td></tr><tr data-row><td><div class="cell-main"><span class="avatar">OH</span><div><strong>Omar Haddad</strong><small class="mono">MTI-2026-0132</small></div></div></td><td><fieldset class="att-toggle" style="border:0;padding:0;margin:0" aria-label="Attendance for Omar Haddad"><label><input type="radio" name="att-6" value="present"><span>Present</span></label><label><input type="radio" name="att-6" value="absent"><span>Absent</span></label><label><input type="radio" name="att-6" value="leave" checked><span>Leave</span></label></fieldset></td><td style="min-width:150px"><div class="progress-cell"><div class="progress"><span style="width:79%"></span></div><small class="mono">79%</small></div></td></tr><tr data-row><td><div class="cell-main"><span class="avatar">YT</span><div><strong>Yuki Tanaka</strong><small class="mono">MTI-2026-0131</small></div></div></td><td><fieldset class="att-toggle" style="border:0;padding:0;margin:0" aria-label="Attendance for Yuki Tanaka"><label><input type="radio" name="att-7" value="present" checked><span>Present</span></label><label><input type="radio" name="att-7" value="absent"><span>Absent</span></label><label><input type="radio" name="att-7" value="leave"><span>Leave</span></label></fieldset></td><td style="min-width:150px"><div class="progress-cell"><div class="progress"><span style="width:93%"></span></div><small class="mono">93%</small></div></td></tr></tbody></table></div>
-    <div class="table-foot"><span>Changes are not saved until you select Save attendance.</span><button class="btn btn-primary" type="submit"><i data-lucide="save"></i>Save attendance</button></div>
+    <div class="card-head">
+      <div>
+        <h2>Student roster</h2>
+        <p>{{ selected_course.name|default:"Selected course" }} · {{ selected_date }}</p>
+      </div>
+      <button type="button" class="btn btn-sm" id="mark-all-present">
+        <i data-lucide="check-check"></i>Mark all present
+      </button>
+    </div>
+
+    <div class="card-body" style="border-bottom:1px solid var(--border)">
+      <div class="summary-strip">
+        <div><strong id="sum-present" class="mono">{{ sum_present }}</strong><span>Present</span></div>
+        <div><strong id="sum-absent" class="mono">{{ sum_absent }}</strong><span>Absent</span></div>
+        <div><strong id="sum-leave" class="mono">{{ sum_leave }}</strong><span>On leave</span></div>
+        <div>
+          <strong id="sum-rate" class="mono">{{ sum_rate }}%</strong>
+          <span>Today's attendance</span>
+          <div class="progress" style="margin-top:6px">
+            <span id="rate-bar" style="width:{{ sum_rate }}%"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table class="table" id="attendance-table">
+        <thead>
+          <tr>
+            <th>Student</th>
+            <th>Today's status</th>
+            <th>Overall course attendance</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in roster %}
+            <tr data-row>
+              <td>
+                <div class="cell-main">
+                  <span class="avatar">{{ item.student.initials }}</span>
+                  <div>
+                    <strong><a href="/portal/admin/students/{{ item.student.id }}/">{{ item.student.full_name }}</a></strong>
+                    <small class="mono">{{ item.student.registration_number }}</small>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <fieldset class="att-toggle" style="border:0;padding:0;margin:0" aria-label="Attendance for {{ item.student.full_name }}">
+                  <label>
+                    <input type="radio" name="att-{{ item.idx }}" value="present" {% if item.status == 'present' %}checked{% endif %}>
+                    <span>Present</span>
+                  </label>
+                  <label>
+                    <input type="radio" name="att-{{ item.idx }}" value="absent" {% if item.status == 'absent' %}checked{% endif %}>
+                    <span>Absent</span>
+                  </label>
+                  <label>
+                    <input type="radio" name="att-{{ item.idx }}" value="leave" {% if item.status == 'leave' %}checked{% endif %}>
+                    <span>Leave</span>
+                  </label>
+                </fieldset>
+              </td>
+              <td style="min-width:150px">
+                <div class="progress-cell">
+                  <div class="progress {% if item.overall_attendance >= 80 %}is-complete{% endif %}">
+                    <span style="width:{{ item.overall_attendance }}%"></span>
+                  </div>
+                  <small class="mono">{{ item.overall_attendance }}%</small>
+                </div>
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="3" style="text-align:center;padding:36px;color:var(--text-3)">
+                No enrolled students found for this course. Enroll students to track attendance.
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% if roster %}
+      <div class="table-foot">
+        <span>Save attendance to update student records and calculate completion.</span>
+        <button class="btn btn-primary" type="submit"><i data-lucide="save"></i>Save attendance</button>
+      </div>
+    {% endif %}
   </section>
 </form>
 {% endblock %}

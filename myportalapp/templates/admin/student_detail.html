@@ -1,28 +1,167 @@
 {% extends 'base.html' %}
 {% load static %}
-{% comment %}
-Student detail. Backend: student, enrollments (with progress, attendance_summary), certificates, completion_status. Demo data shown.
-{% endcomment %}
-{% block title %}Student detail{% endblock %}
+{% block title %}{{ student.full_name }}{% endblock %}
 {% block role %}admin{% endblock %}
 {% block nav_key %}students{% endblock %}
 {% block content %}
-<div class="page-head"><div><div class="breadcrumb"><a href="/portal/admin/students/">Students</a><span>/</span><span>Priya Raman</span></div>
-  <div class="row" style="--gap:16px"><span class="avatar avatar-lg">PR</span><div><h1>Priya Raman</h1><p style="margin:2px 0 0">Registration no. <b class="mono">MTI-2026-0142</b> · <span class="badge badge-info">Enrolled</span></p></div></div></div>
-  <div class="row"><a class="btn" href="/portal/admin/students/enroll/"><i data-lucide="pencil"></i>Edit</a><a class="btn btn-primary" href="/portal/admin/certificates/"><i data-lucide="award"></i>Issue certificate</a></div></div>
+<div class="page-head">
+  <div>
+    <div class="breadcrumb">
+      <a href="/portal/admin/students/">Students</a><span>/</span><span>{{ student.full_name }}</span>
+    </div>
+    <div class="row" style="--gap:16px">
+      <span class="avatar avatar-lg">{{ student.initials }}</span>
+      <div>
+        <h1>{{ student.full_name }}</h1>
+        <p style="margin:2px 0 0">
+          Registration no. <b class="mono">{{ student.registration_number }}</b> ·
+          <span class="badge {% if student.status == 'completed' %}badge-success{% elif student.status == 'enrolled' %}badge-info{% else %}badge-warning{% endif %}">
+            {{ student.get_status_display }}
+          </span>
+        </p>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <a class="btn" href="/portal/admin/students/{{ student.id }}/edit/"><i data-lucide="pencil"></i>Edit student</a>
+    <a class="btn btn-ghost" href="/portal/admin/students/{{ student.id }}/delete/" style="color:var(--danger)"><i data-lucide="trash-2"></i>Delete / Deactivate</a>
+    <a class="btn" href="/portal/admin/students/enroll/"><i data-lucide="user-plus"></i>Enroll in course</a>
+    <a class="btn btn-primary" href="/portal/admin/certificates/"><i data-lucide="award"></i>Issue certificate</a>
+  </div>
+</div>
+
 <div class="grid grid-main">
   <div class="stack" style="--gap:20px">
-    <section class="card"><div class="card-head"><h2>Enrolled courses</h2></div>
-      <div class="list-row"><div class="grow"><strong>Industrial Safety Fundamentals</strong><small>5 days · 30 hours · Started 20 Oct 2026</small><div style="margin-top:8px;max-width:320px"><div class="progress-cell"><div class="progress"><span style="width:35%"></span></div><small class="mono">35%</small></div></div></div><span class="badge badge-info">In progress</span></div>
-      <div class="list-row"><div class="grow"><strong>Basic First Aid</strong><small>1 day · 8 hours · Completed 12 Mar 2026</small><div style="margin-top:8px;max-width:320px"><div class="progress-cell"><div class="progress is-complete"><span style="width:100%"></span></div><small class="mono">100%</small></div></div></div><span class="badge badge-success">Completed</span></div></section>
-    <section class="card"><div class="card-head"><div><h2>Attendance summary</h2><p>Industrial Safety Fundamentals</p></div><a href="/portal/admin/attendance/" class="btn btn-sm">Open attendance</a></div>
-      <div class="card-body"><div class="summary-strip"><div><strong>3</strong><span>Present</span></div><div><strong>1</strong><span>Absent</span></div><div><strong>0</strong><span>Leave</span></div><div><strong>75%</strong><span>Attendance</span></div></div></div></section>
-    <section class="card"><div class="card-head"><h2>Certificates issued</h2></div>
-      <div class="list-row"><i data-lucide="award"></i><div class="grow"><strong>Certificate of Completion · Basic First Aid</strong><small class="mono">MTI-2026-0071 · Issued 14 Mar 2026</small></div><span class="badge badge-success">Issued</span><button class="btn btn-sm" data-modal-open="cert-preview">Preview</button></div></section>
+    <section class="card">
+      <div class="card-head"><h2>Enrolled courses</h2></div>
+      {% for enr in student.enrollments.all %}
+        <div class="list-row">
+          <div class="grow">
+            <strong>{{ enr.course.name }} ({{ enr.course.code }})</strong>
+            <small>{{ enr.course.duration_days }} days · {{ enr.course.duration_hours }} hours · Enrolled {{ enr.enrollment_date|date:"d M Y" }}</small>
+            <div style="margin-top:8px;max-width:320px">
+              <div class="progress-cell">
+                <div class="progress {% if enr.progress_percent >= 100 %}is-complete{% endif %}">
+                  <span style="width:{{ enr.progress_percent }}%"></span>
+                </div>
+                <small class="mono">{{ enr.progress_percent }}%</small>
+              </div>
+            </div>
+          </div>
+          <span class="badge {% if enr.status == 'completed' %}badge-success{% else %}badge-info{% endif %}">
+            {{ enr.get_status_display }}
+          </span>
+        </div>
+      {% empty %}
+        <div class="card-body text-muted text-center" style="padding:24px">No course enrollments found.</div>
+      {% endfor %}
+    </section>
+
+    {% if primary_enrollment %}
+      <section class="card">
+        <div class="card-head">
+          <div>
+            <h2>Attendance summary</h2>
+            <p>{{ primary_enrollment.course.name }}</p>
+          </div>
+          <a href="/portal/admin/attendance/?course_id={{ primary_enrollment.course.id }}" class="btn btn-sm">Open attendance</a>
+        </div>
+        <div class="card-body">
+          <div class="summary-strip">
+            <div><strong>{{ attendance_summary.present }}</strong><span>Present</span></div>
+            <div><strong>{{ attendance_summary.absent }}</strong><span>Absent</span></div>
+            <div><strong>{{ attendance_summary.leave }}</strong><span>Leave</span></div>
+            <div><strong>{{ attendance_summary.rate }}%</strong><span>Attendance</span></div>
+          </div>
+        </div>
+      </section>
+    {% endif %}
+
+    <section class="card">
+      <div class="card-head"><h2>Certificates issued</h2></div>
+      {% for cert in certificates %}
+        <div class="list-row" data-row
+             data-type="{{ cert.certificate_type }}"
+             data-name="{{ cert.student.full_name }}"
+             data-course="{{ cert.course.name }}"
+             data-number="{{ cert.certificate_number }}"
+             data-days="{{ cert.duration_days }}"
+             data-hours="{{ cert.duration_hours }}"
+             data-completed="{{ cert.completion_date|date:'d F Y' }}"
+             data-issued="{{ cert.issue_date|date:'d F Y' }}"
+             data-award="{{ cert.achievement_text }}"
+             data-download-url="/portal/admin/certificates/{{ cert.id }}/download/">
+          <i data-lucide="award"></i>
+          <div class="grow">
+            <strong>{{ cert.get_certificate_type_display }} · {{ cert.course.name }}</strong>
+            <small class="mono">{{ cert.certificate_number }} · Issued {{ cert.issue_date|date:"d M Y" }}</small>
+          </div>
+          <span class="badge {% if cert.status == 'issued' %}badge-success{% else %}badge-danger{% endif %}">
+            {{ cert.get_status_display }}
+          </span>
+          <a class="btn btn-sm" href="/portal/admin/certificates/{{ cert.id }}/download/"><i data-lucide="download"></i>PDF</a>
+          <button class="btn btn-sm" data-cert-preview="cert-preview">Preview</button>
+        </div>
+      {% empty %}
+        <div class="card-body text-muted text-center" style="padding:24px">No certificates issued yet.</div>
+      {% endfor %}
+    </section>
   </div>
+
   <div class="stack" style="--gap:20px">
-    <section class="card"><div class="card-head"><h2>Profile</h2></div><div class="card-body"><dl class="kv"><dt>Email</dt><dd>priya.raman@example.com</dd><dt>Phone</dt><dd>+1 555 0142</dd><dt>Registration no.</dt><dd>MTI-2026-0142</dd><dt>Enrolled since</dt><dd>20 Oct 2026</dd><dt>Completion</dt><dd>Not yet approved</dd></dl></div></section>
-    <section class="card"><div class="card-head"><h2>Completion status</h2></div><div class="card-body stack" style="--gap:10px"><p class="text-muted">Needs 80% attendance and all 30 training hours before it can be approved.</p><div class="progress-cell"><div class="progress"><span style="width:35%"></span></div><small class="mono">35%</small></div><p class="text-sm text-muted mono">10.5 of 30 hours completed</p></div></section>
+    <section class="card">
+      <div class="card-head"><h2>Profile details</h2></div>
+      <div class="card-body">
+        <dl class="kv">
+          <dt>Email</dt>
+          <dd>{{ student.email }}</dd>
+          <dt>Phone</dt>
+          <dd>{{ student.phone|default:"—" }}</dd>
+          <dt>Registration no.</dt>
+          <dd class="mono">{{ student.registration_number }}</dd>
+          <dt>Member since</dt>
+          <dd>{{ student.created_at|date:"d M Y" }}</dd>
+          <dt>User account</dt>
+          <dd>{% if student.user %}Active (<span class="mono">{{ student.user.username }}</span>){% else %}None{% endif %}</dd>
+        </dl>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-head"><h2>Account &amp; Security</h2></div>
+      <div class="card-body">
+        <p class="text-sm text-muted" style="margin-bottom:12px">
+          Reset the student's password securely. Existing passwords remain securely hashed and are never displayed.
+        </p>
+        <form method="post" action="/portal/admin/students/{{ student.id }}/reset-password/">
+          {% csrf_token %}
+          <div class="field" style="margin-bottom:12px">
+            <label for="new_password">New password <span class="req">*</span></label>
+            <input class="input" id="new_password" name="new_password" type="password" required minlength="8" placeholder="Enter at least 8 characters">
+          </div>
+          <button class="btn btn-sm btn-primary" type="submit"><i data-lucide="key-round"></i>Reset password</button>
+        </form>
+      </div>
+    </section>
+
+    {% if primary_enrollment %}
+      <section class="card">
+        <div class="card-head"><h2>Completion status</h2></div>
+        <div class="card-body stack" style="--gap:10px">
+          <p class="text-muted">
+            Status: <strong>{{ primary_enrollment.get_completion_status_display }}</strong>.
+            Requires at least 80% attendance and {{ primary_enrollment.course.duration_hours }} training hours.
+          </p>
+          <div class="progress-cell">
+            <div class="progress {% if primary_enrollment.progress_percent >= 100 %}is-complete{% endif %}">
+              <span style="width:{{ primary_enrollment.progress_percent }}%"></span>
+            </div>
+            <small class="mono">{{ primary_enrollment.progress_percent }}%</small>
+          </div>
+          <p class="text-sm text-muted mono">{{ completed_hours }} of {{ primary_enrollment.course.duration_hours }} hours completed</p>
+        </div>
+      </section>
+    {% endif %}
   </div>
 </div>
 {% endblock %}

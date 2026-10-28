@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Edit {{ student.full_name }}{% endblock %}
+{% block role %}admin{% endblock %}
+{% block nav_key %}students{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <div class="breadcrumb">
+      <a href="/portal/admin/students/">Students</a><span>/</span>
+      <a href="/portal/admin/students/{{ student.id }}/">{{ student.full_name }}</a><span>/</span>
+      <span>Edit</span>
+    </div>
+    <h1>Edit student</h1>
+    <p>Update personal information, credentials, and enrollment status for <strong class="mono">{{ student.registration_number }}</strong>.</p>
+  </div>
+</div>
+
+<form class="card" data-validate method="post" action="">
+  {% csrf_token %}
+  <div class="card-body">
+    {% if form.errors %}
+      <div class="alert alert-error" role="alert">
+        <i data-lucide="circle-alert"></i>
+        <span>Please correct the highlighted errors before saving.</span>
+      </div>
+    {% endif %}
+
+    <div class="form-section">
+      <h2>Personal Information</h2>
+      <p>Name and contact information used on official certificates.</p>
+      <div class="form-grid">
+        <div class="field {% if form.full_name.errors %}has-error{% endif %}">
+          <label for="full_name">Full name <span class="req">*</span></label>
+          <input class="input" id="full_name" name="full_name" required
+                 value="{{ form.full_name.value|default:student.full_name }}"
+                 data-error="Enter the student's full name.">
+          <p class="error-text">
+            <i data-lucide="circle-alert" style="width:14px;height:14px"></i>
+            <span>{{ form.full_name.errors.0|default:"" }}</span>
+          </p>
+        </div>
+
+        <div class="field {% if form.email.errors %}has-error{% endif %}">
+          <label for="email">Email <span class="req">*</span></label>
+          <input class="input" id="email" name="email" type="email" required
+                 value="{{ form.email.value|default:student.email }}"
+                 data-error="Enter a valid email address.">
+          <p class="error-text">
+            <i data-lucide="circle-alert" style="width:14px;height:14px"></i>
+            <span>{{ form.email.errors.0|default:"" }}</span>
+          </p>
+        </div>
+
+        <div class="field {% if form.phone.errors %}has-error{% endif %}">
+          <label for="phone">Phone number</label>
+          <input class="input" id="phone" name="phone" type="tel"
+                 value="{{ form.phone.value|default:student.phone }}"
+                 placeholder="e.g. +1 555-0199">
+          <span class="hint">Optional. Existing phone number is preserved if left blank.</span>
+          <p class="error-text">
+            <i data-lucide="circle-alert" style="width:14px;height:14px"></i>
+            <span>{{ form.phone.errors.0|default:"" }}</span>
+          </p>
+        </div>
+
+        <div class="field">
+          <label for="reg_no">Registration number</label>
+          <input class="input mono" id="reg_no" type="text" value="{{ student.registration_number }}" readonly disabled style="background:var(--surface-2);color:var(--text-3);cursor:not-allowed">
+          <span class="hint">Unique institutional identifier cannot be changed.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h2>Portal Account &amp; Credentials</h2>
+      <p>Authentication credentials for the student portal login.</p>
+      <div class="form-grid">
+        <div class="field {% if form.username.errors %}has-error{% endif %}">
+          <label for="username">Portal username</label>
+          <input class="input" id="username" name="username"
+                 value="{{ form.username.value|default:student.user.username|default:'' }}"
+                 placeholder="e.g. {{ student.registration_number|lower }}">
+          <span class="hint">Students can sign in using either their username or email.</span>
+          <p class="error-text">
+            <i data-lucide="circle-alert" style="width:14px;height:14px"></i>
+            <span>{{ form.username.errors.0|default:"" }}</span>
+          </p>
+        </div>
+
+        <div class="field {% if form.new_password.errors %}has-error{% endif %}">
+          <label for="new_password">New password</label>
+          <input class="input" id="new_password" name="new_password" type="password" minlength="8"
+                 placeholder="Leave blank to preserve current password">
+          <span class="hint">Leave blank to keep existing password. Minimum 8 characters.</span>
+          <p class="error-text">
+            <i data-lucide="circle-alert" style="width:14px;height:14px"></i>
+            <span>{{ form.new_password.errors.0|default:"" }}</span>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h2>Student Status</h2>
+      <p>Overall status of the student record across the portal.</p>
+      <div class="form-grid">
+        <div class="field {% if form.status.errors %}has-error{% endif %}">
+          <label for="status">Status <span class="req">*</span></label>
+          <select class="input" id="status" name="status" required>
+            <option value="enrolled" {% if form.status.value == "enrolled" or not form.status.value and student.status == "enrolled" %}selected{% endif %}>Enrolled</option>
+            <option value="completed" {% if form.status.value == "completed" or not form.status.value and student.status == "completed" %}selected{% endif %}>Completed</option>
+            <option value="inactive" {% if form.status.value == "inactive" or not form.status.value and student.status == "inactive" %}selected{% endif %}>Inactive</option>
+          </select>
+          <p class="error-text">
+            <i data-lucide="circle-alert" style="width:14px;height:14px"></i>
+            <span>{{ form.status.errors.0|default:"" }}</span>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button class="btn btn-primary" type="submit"><i data-lucide="save"></i>Save changes</button>
+      <a class="btn btn-ghost" href="/portal/admin/students/{{ student.id }}/">Cancel</a>
+    </div>
+  </div>
+</form>
+{% endblock %}

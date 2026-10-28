@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Manage Student Record - {{ student.full_name }}{% endblock %}
+{% block role %}admin{% endblock %}
+{% block nav_key %}students{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <div class="breadcrumb">
+      <a href="/portal/admin/students/">Students</a><span>/</span>
+      <a href="/portal/admin/students/{{ student.id }}/">{{ student.full_name }}</a><span>/</span>
+      <span>Delete or Deactivate</span>
+    </div>
+    <h1>Manage student record</h1>
+    <p>Review linked records, foreign key cascade impact, and choose between safe deactivation or permanent deletion.</p>
+  </div>
+</div>
+
+<div class="grid grid-main" style="align-items:start">
+  <div class="stack" style="--gap:20px">
+    <section class="card">
+      <div class="card-head">
+        <h2>Student summary</h2>
+      </div>
+      <div class="card-body">
+        <div class="row" style="--gap:16px;margin-bottom:16px">
+          <span class="avatar avatar-lg">{{ student.initials }}</span>
+          <div>
+            <h3>{{ student.full_name }}</h3>
+            <p class="text-sm text-muted">
+              Registration no. <strong class="mono">{{ student.registration_number }}</strong> ·
+              Email: <strong>{{ student.email }}</strong> ·
+              Status: <span class="badge {% if student.status == 'completed' %}badge-success{% elif student.status == 'enrolled' %}badge-info{% else %}badge-warning{% endif %}">{{ student.get_status_display }}</span>
+            </p>
+          </div>
+        </div>
+
+        <div class="summary-strip" style="grid-template-columns:repeat(3, 1fr)">
+          <div><strong>{{ enrollments|length }}</strong><span>Course enrollment{{ enrollments|length|pluralize }}</span></div>
+          <div><strong>{{ attendance_count }}</strong><span>Attendance record{{ attendance_count|pluralize }}</span></div>
+          <div><strong>{{ certificates|length }}</strong><span>Certificate{{ certificates|length|pluralize }} ({{ issued_certificates_count }} issued)</span></div>
+        </div>
+      </div>
+    </section>
+
+    {% if certificates %}
+      <section class="card">
+        <div class="card-head">
+          <h2>Linked certificates</h2>
+        </div>
+        <div class="card-body stack" style="--gap:8px">
+          {% for cert in certificates %}
+            <div class="list-row" style="padding:10px 0">
+              <i data-lucide="award"></i>
+              <div class="grow">
+                <strong>{{ cert.get_certificate_type_display }} · {{ cert.course.name }}</strong>
+                <small class="mono">{{ cert.certificate_number }} · Issued {{ cert.issue_date|date:"d M Y" }}</small>
+              </div>
+              <span class="badge {% if cert.status == 'issued' %}badge-success{% else %}badge-danger{% endif %}">
+                {{ cert.get_status_display }}
+              </span>
+            </div>
+          {% endfor %}
+        </div>
+      </section>
+    {% endif %}
+
+    <section class="card" style="border-left:4px solid var(--accent)">
+      <div class="card-head">
+        <div>
+          <h2>Data retention &amp; Foreign key rules</h2>
+          <p>Important compliance and database relationship safeguards</p>
+        </div>
+      </div>
+      <div class="card-body stack" style="--gap:12px;font-size:14px;color:var(--text-2);line-height:1.6">
+        <p>
+          <strong>Database Foreign Key Rules:</strong> Student records are linked via <code>CASCADE</code> foreign keys to course enrollments, session attendance logs, and certificate records.
+        </p>
+        <p>
+          <strong>Risk of Permanent Deletion:</strong> Permanently deleting this student permanently removes all {{ enrollments|length }} course enrollment{{ enrollments|length|pluralize }}, {{ attendance_count }} attendance log{{ attendance_count|pluralize }}, and {{ certificates|length }} certificate record{{ certificates|length|pluralize }}. Any issued certificate links and public verification records will be permanently destroyed.
+        </p>
+        <p>
+          <strong>Recommended Safe Alternative (Deactivation):</strong> Deactivation marks the student status as <strong class="badge badge-warning">Inactive</strong> and disables portal login, preventing any further student access or new enrollments, while <em>safely preserving all historical certificates, attendance logs, and verification data intact</em>.
+        </p>
+      </div>
+    </section>
+  </div>
+
+  <section class="card" style="border:1px solid var(--border)">
+    <div class="card-head">
+      <h2>Action confirmation</h2>
+    </div>
+    <div class="card-body">
+      <form method="post" action="">
+        {% csrf_token %}
+
+        <div class="stack" style="--gap:16px">
+          <div style="background:var(--surface-2);padding:16px;border-radius:8px">
+            <h4 style="margin:0 0 8px;display:flex;align-items:center;gap:8px;color:var(--text-1)">
+              <i data-lucide="shield-check" style="color:var(--accent)"></i> Option A: Deactivate Student (Recommended)
+            </h4>
+            <p class="text-sm text-muted" style="margin-bottom:12px">
+              Disables login and prevents new activity while protecting all academic and certificate records.
+            </p>
+            <button class="btn btn-primary" type="submit" name="action" value="deactivate" style="width:100%">
+              <i data-lucide="user-x"></i>Deactivate student
+            </button>
+          </div>
+
+          <div style="background:rgba(239, 68, 68, 0.05);border:1px solid rgba(239, 68, 68, 0.2);padding:16px;border-radius:8px">
+            <h4 style="margin:0 0 8px;display:flex;align-items:center;gap:8px;color:var(--danger)">
+              <i data-lucide="trash-2"></i> Option B: Permanent Deletion
+            </h4>
+            <p class="text-sm text-muted" style="margin-bottom:12px">
+              Irreversible action. Permanently removes the student profile, login account, and all associated enrollments, attendance, and certificates.
+            </p>
+
+            {% if has_issued_certificates %}
+              <div class="alert alert-error" style="margin-bottom:12px">
+                <i data-lucide="alert-triangle"></i>
+                <span><strong>Restriction:</strong> This student has {{ issued_certificates_count }} officially issued certificate{{ issued_certificates_count|pluralize }}. To prevent accidental data loss, you must confirm below.</span>
+              </div>
+              <label style="display:flex;align-items:flex-start;gap:8px;font-size:13px;margin-bottom:12px;cursor:pointer">
+                <input type="checkbox" name="confirm_permanent_delete" value="1" style="margin-top:2px">
+                <span>I understand that permanently deleting this student will destroy all {{ issued_certificates_count }} issued certificate(s) and cannot be undone.</span>
+              </label>
+            {% endif %}
+
+            <button class="btn btn-danger" type="submit" name="action" value="delete" style="width:100%">
+              <i data-lucide="trash-2"></i>Permanently delete student
+            </button>
+          </div>
+
+          <div style="text-align:center;margin-top:8px">
+            <a class="btn btn-ghost" href="/portal/admin/students/{{ student.id }}/">Cancel and return</a>
+          </div>
+        </div>
+      </form>
+    </div>
+  </section>
+</div>
+{% endblock %}

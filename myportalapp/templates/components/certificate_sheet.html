@@ -24,7 +24,27 @@
       <div><span>Completion date</span><b data-cert-field="completed">{{ completion_date|default:"DD Month YYYY" }}</b></div>
     </div>
     <div class="cert-foot">
-      <div class="cert-sign"><div class="line" data-cert-field="signatory_name">{{ signatory_name|default:"Authorized Signatory" }}</div><strong data-cert-field="signatory_title">{{ signatory_title|default:"Director of Training" }}</strong>Authorized signatory</div>
+      <div class="cert-sign">
+        {% if signature_url %}
+          <div class="signature-img-wrap">
+            <img data-signature-preview src="{{ signature_url }}" alt="Digital Signature" class="signature-img">
+          </div>
+        {% elif signature_image_url %}
+          <div class="signature-img-wrap">
+            <img data-signature-preview src="{{ signature_image_url }}" alt="Digital Signature" class="signature-img">
+          </div>
+        {% elif org and org.signature_image_url %}
+          <div class="signature-img-wrap">
+            <img data-signature-preview src="{{ org.signature_image_url }}" alt="Digital Signature" class="signature-img">
+          </div>
+        {% else %}
+          <div class="signature-img-wrap" style="display:none">
+            <img data-signature-preview src="" alt="Digital Signature" class="signature-img">
+          </div>
+        {% endif %}
+        <div class="line" data-cert-field="signatory_name">{{ signatory_name|default:org.signatory_name|default:"Authorized Signatory" }}</div>
+        <strong data-cert-field="signatory_title">{{ signatory_title|default:org.signatory_title|default:"Director of Training" }}</strong>Authorized signatory
+      </div>
       <div class="cert-seal" aria-hidden="true"><i data-lucide="award"></i></div>
       <div class="cert-sign"><div class="line" data-cert-field="issued">{{ issue_date|default:"DD Month YYYY" }}</div><strong>Date of issue</strong></div>
     </div>

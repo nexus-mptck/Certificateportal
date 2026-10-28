@@ -1,21 +1,74 @@
 {% extends 'base.html' %}
 {% load static %}
-{% comment %}
-Backend: issued certificates (course, number, type, issue_date, file/preview). Download needs a real PDF endpoint later.
-{% endcomment %}
 {% block title %}My certificates{% endblock %}
 {% block role %}student{% endblock %}
 {% block nav_key %}my-certificates{% endblock %}
 {% block content %}
-<div class="page-head"><div><h1>My certificates</h1><p>Certificates you have earned. Print one or save it as a PDF.</p></div><span class="demo-note"><i data-lucide="flask-conical" style="width:14px;height:14px"></i>Sample certificate</span></div>
-{# Backend: certificates for the student with status == issued #}
-<div class="grid grid-3"><article class="card cert-card completion" data-row data-type="completion" data-name="Priya Raman" data-course="Basic First Aid" data-number="MTI-2026-0071" data-days="1" data-hours="8" data-completed="14 Mar 2026" data-issued="14 Mar 2026"><div class="cert-thumb"></div><div class="body"><div class="row-between"><h3>Basic First Aid</h3><span class="badge badge-info">Completion</span></div><p class="text-sm text-muted">Certificate no. <span class="mono">MTI-2026-0071</span><br>Issued 14 Mar 2026</p><div class="btns"><button class="btn btn-sm" data-cert-preview="cert-preview"><i data-lucide="eye"></i>Preview</button><button class="btn btn-sm" data-cert-preview="cert-preview" data-then-print><i data-lucide="printer"></i>Print</button><button class="btn btn-sm" data-demo-action="Download is a placeholder|Use Print, then Save as PDF, until the backend exists." data-toast-type="error"><i data-lucide="download"></i>Download</button></div></div></article></div>
-<div class="card" style="margin-top:20px"><div class="card-body row"><i data-lucide="info"></i><p class="text-muted">Finish your current course and wait for approval to receive your next certificate.</p></div></div>
+<div class="page-head">
+  <div>
+    <h1>My certificates</h1>
+    <p>Official course certificates you have earned. Preview them online, print, or download official PDF files.</p>
+  </div>
+</div>
+
+<div class="grid grid-3">
+  {% for cert in certificates %}
+    <article class="card cert-card {% if cert.certificate_type == 'achievement' %}achievement{% else %}completion{% endif %}"
+             data-row
+             data-type="{{ cert.certificate_type }}"
+             data-name="{{ cert.student.full_name }}"
+             data-course="{{ cert.course.name }}"
+             data-number="{{ cert.certificate_number }}"
+             data-days="{{ cert.duration_days }}"
+             data-hours="{{ cert.duration_hours }}"
+             data-completed="{{ cert.completion_date|date:'d F Y' }}"
+             data-issued="{{ cert.issue_date|date:'d F Y' }}"
+             data-award="{{ cert.achievement_text }}"
+             data-signature-url="{{ cert.signature_url }}"
+             data-download-url="/portal/student/certificates/{{ cert.id }}/download/">
+      <div class="cert-thumb"></div>
+      <div class="body">
+        <div class="row-between">
+          <h3>{{ cert.course.name }}</h3>
+          <span class="badge {% if cert.certificate_type == 'achievement' %}badge-violet{% else %}badge-info{% endif %}">
+            {{ cert.get_certificate_type_display }}
+          </span>
+        </div>
+        <p class="text-sm text-muted">
+          Certificate no. <span class="mono">{{ cert.certificate_number }}</span><br>
+          Issued {{ cert.issue_date|date:"d M Y" }}
+        </p>
+        <div class="btns">
+          <button class="btn btn-sm" data-cert-preview="cert-preview">
+            <i data-lucide="eye"></i>Preview
+          </button>
+          <a class="btn btn-sm" href="/portal/student/certificates/{{ cert.id }}/download/">
+            <i data-lucide="download"></i>Download PDF
+          </a>
+        </div>
+      </div>
+    </article>
+  {% empty %}
+    <div class="card" style="grid-column:1/-1;padding:40px;text-align:center;color:var(--text-3)">
+      <i data-lucide="award" style="width:36px;height:36px;margin:0 auto 12px;display:block;color:var(--text-3)"></i>
+      <strong>No certificates issued yet</strong>
+      <p style="margin-top:6px">Complete your course requirements and wait for administrator approval to receive your certificate.</p>
+    </div>
+  {% endfor %}
+</div>
 {% endblock %}
 {% block modals %}
-{% include 'components/certificate_modal.html' with modal_id='cert-preview' cert_type='completion' %}
+{% include 'components/certificate_modal.html' with modal_id='cert-preview' cert_type='completion' is_official=True %}
 {% endblock %}
 {% block extra_js %}
 <script src="{% static 'js/certificates.js' %}"></script>
-<script>document.addEventListener("click",function(e){var b=e.target.closest("[data-then-print]");if(b)setTimeout(function(){document.querySelector("#cert-preview [data-print]").click()},120)});</script>
+<script>
+  document.addEventListener("click", function(e) {
+    var b = e.target.closest("[data-then-print]");
+    if (b) setTimeout(function() {
+      var btn = document.querySelector("#cert-preview [data-print]");
+      if (btn) btn.click();
+    }, 120);
+  });
+</script>
 {% endblock %}

@@ -1,16 +1,72 @@
 {% extends 'base.html' %}
 {% load static %}
-{% comment %}
-Backend: enrollments for the logged-in student with course details and completion status.
-{% endcomment %}
 {% block title %}My courses{% endblock %}
 {% block role %}student{% endblock %}
 {% block nav_key %}my-courses{% endblock %}
 {% block content %}
-<div class="page-head"><div><h1>My courses</h1><p>Every course you are enrolled in, with its duration and your progress.</p></div></div>
-<div data-filter-scope><div class="chip-row" style="margin-bottom:18px" role="group" aria-label="Filter courses"><button class="chip" data-chip="all" aria-pressed="true">All</button><button class="chip" data-chip="in-progress" aria-pressed="false">In progress</button><button class="chip" data-chip="completed" aria-pressed="false">Completed</button></div>
-<div class="grid grid-2">
- <article class="card course-card" data-row data-status="in-progress"><header><div><h3>Industrial Safety Fundamentals</h3><span class="code">CRS-101</span></div><span class="badge badge-info">In progress</span></header><div class="meta-row"><span><i data-lucide="calendar-days"></i>5 training days</span><span><i data-lucide="clock"></i>30 training hours</span></div><div><div class="row-between text-sm"><span class="text-muted">Progress</span><b class="mono">35%</b></div><div class="progress" style="margin-top:6px"><span style="width:35%"></span></div></div><div class="row-between text-sm"><span class="text-muted">Attendance</span><b class="mono">75%</b></div><dl class="kv" style="grid-template-columns:110px 1fr"><dt>Dates</dt><dd>20 Oct – 27 Oct 2026</dd><dt>Hours done</dt><dd class="mono">10.5 of 30</dd><dt>Completion</dt><dd>Needs 80% attendance</dd></dl></article>
- <article class="card course-card" data-row data-status="completed"><header><div><h3>Basic First Aid</h3><span class="code">CRS-090</span></div><span class="badge badge-success">Completed</span></header><div class="meta-row"><span><i data-lucide="calendar-days"></i>1 training days</span><span><i data-lucide="clock"></i>8 training hours</span></div><div><div class="row-between text-sm"><span class="text-muted">Progress</span><b class="mono">100%</b></div><div class="progress is-complete" style="margin-top:6px"><span style="width:100%"></span></div></div><div class="row-between text-sm"><span class="text-muted">Attendance</span><b class="mono">100%</b></div><dl class="kv" style="grid-template-columns:110px 1fr"><dt>Dates</dt><dd>12 Mar 2026</dd><dt>Hours done</dt><dd class="mono">8 of 8</dd><dt>Completion</dt><dd>Approved · certificate issued</dd></dl></article>
-</div><div class="empty"><strong>No courses here</strong>Try another filter.</div></div>
+<div class="page-head">
+  <div>
+    <h1>My courses</h1>
+    <p>Every training course you are enrolled in, duration details, and your completion progress.</p>
+  </div>
+</div>
+
+<div data-filter-scope>
+  <div class="chip-row" style="margin-bottom:18px" role="group" aria-label="Filter courses">
+    <button class="chip" data-chip="all" aria-pressed="true">All</button>
+    <button class="chip" data-chip="enrolled" aria-pressed="false">In progress</button>
+    <button class="chip" data-chip="completed" aria-pressed="false">Completed</button>
+  </div>
+
+  <div class="grid grid-2">
+    {% for enr in enrollments %}
+      <article class="card course-card" data-row data-status="{{ enr.status }}">
+        <header>
+          <div>
+            <h3>{{ enr.course.name }}</h3>
+            <span class="code">{{ enr.course.code }}</span>
+          </div>
+          <span class="badge {% if enr.status == 'completed' %}badge-success{% else %}badge-info{% endif %}">
+            {{ enr.get_status_display }}
+          </span>
+        </header>
+        <div class="meta-row">
+          <span><i data-lucide="calendar-days"></i>{{ enr.course.duration_days }} training days</span>
+          <span><i data-lucide="clock"></i>{{ enr.course.duration_hours }} training hours</span>
+        </div>
+        <div>
+          <div class="row-between text-sm">
+            <span class="text-muted">Progress</span>
+            <b class="mono">{{ enr.progress_percent }}%</b>
+          </div>
+          <div class="progress {% if enr.progress_percent >= 100 %}is-complete{% endif %}" style="margin-top:6px">
+            <span style="width:{{ enr.progress_percent }}%"></span>
+          </div>
+        </div>
+        <div class="row-between text-sm">
+          <span class="text-muted">Attendance rate</span>
+          <b class="mono">{{ enr.attendance_percent }}%</b>
+        </div>
+        <dl class="kv" style="grid-template-columns:110px 1fr">
+          <dt>Course dates</dt>
+          <dd>{{ enr.course.start_date|date:"d M" }} – {{ enr.course.end_date|date:"d M Y" }}</dd>
+          <dt>Hours done</dt>
+          <dd class="mono">{{ enr.get_completed_hours }} of {{ enr.course.duration_hours }}</dd>
+          <dt>Completion</dt>
+          <dd>{{ enr.get_completion_status_display }}</dd>
+        </dl>
+        {% if enr.status == 'completed' %}
+          <div style="margin-top:14px">
+            <a class="btn btn-sm btn-primary" href="/portal/student/certificates/"><i data-lucide="award"></i>View Certificate</a>
+          </div>
+        {% endif %}
+      </article>
+    {% empty %}
+      <div class="card" style="grid-column:1/-1;padding:36px;text-align:center;color:var(--text-3)">
+        No courses found.
+      </div>
+    {% endfor %}
+  </div>
+  <div class="empty"><strong>No courses here</strong>Try another filter.</div>
+</div>
 {% endblock %}

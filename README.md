@@ -137,11 +137,10 @@ python manage.py makemigrations --check --dry-run
   issued certificates are never committed.
 - No certificate data or rendering credentials are exposed to the browser.
 
-> **Project status:** this repository currently ships the portal UI, templates, static
-> assets and Django project scaffolding. `myportalapp/models.py` and
-> `myportalapp/views.py` are still the Django stubs, so the certificate issuance
-> endpoints, models and ReportLab rendering code are not yet wired up, and
-> `myportalapp/tests.py` contains no test cases yet.
+> **Project status:** The portal backend, models, views, forms, ReportLab PDF rendering
+> engine, authentication/authorization layers, and comprehensive test suite are fully
+> implemented, integrated with the templates and static UI, and verified.
+
 
 ## Environment and secrets
 

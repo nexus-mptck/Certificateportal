@@ -1,0 +1,358 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sign In · {{ org.name|default:"Certification Portal" }}</title>
+  <meta name="description" content="Sign in to {{ org.name|default:'the Certification Portal' }}.">
+  <link rel="icon" href="{% static 'images/logo-placeholder.svg' %}" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{-webkit-text-size-adjust:100%}
+    body{
+      font-family:"Geist","Inter",system-ui,sans-serif;
+      font-size:14px;line-height:1.55;color:#0f172a;
+      min-height:100vh;display:flex;
+      -webkit-font-smoothing:antialiased;
+      background:#f1f5f9;
+    }
+    :focus-visible{outline:2px solid #3b82f6;outline-offset:2px;border-radius:4px}
+
+    /* ── Shell ── */
+    .shell{
+      display:grid;
+      grid-template-columns:minmax(0,1fr) minmax(0,1.12fr);
+      width:100%;min-height:100vh;
+    }
+
+    /* ── Form panel ── */
+    .panel{
+      display:flex;align-items:center;justify-content:center;
+      padding:48px 36px;background:#fff;
+    }
+    .card{width:min(400px,100%)}
+
+    .brand{display:flex;align-items:center;gap:14px;margin-bottom:42px}
+    .brand-logo{
+      width:46px;height:46px;border-radius:12px;
+      border:1px solid #e2e8f0;padding:5px;
+      background:#f8fafc;flex:none;
+    }
+    .brand-name{font-size:15.5px;font-weight:650;color:#0f172a;line-height:1.2}
+    .brand-sub{font-size:12px;color:#64748b;margin-top:2px}
+
+    .card h1{font-size:26px;font-weight:700;letter-spacing:-.018em;margin-bottom:6px}
+    .card>.sub{color:#64748b;font-size:13.5px;margin-bottom:32px}
+
+    /* Error & Alerts */
+    .alert{
+      display:flex;align-items:flex-start;gap:10px;
+      padding:12px 14px;border-radius:9px;margin-bottom:24px;
+      font-size:13.5px;
+      background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;
+    }
+    .alert-info{
+      background:#eff6ff;border:1px solid #bfdbfe;color:#1d4ed8;
+    }
+    .alert-success{
+      background:#f0fdf4;border:1px solid #bbf7d0;color:#15803d;
+    }
+    .alert svg{width:17px;height:17px;flex:none;margin-top:1px}
+
+    /* Fields */
+    .stack>*+*{margin-top:20px}
+    .field label{
+      display:block;font-size:13px;font-weight:550;
+      color:#334155;margin-bottom:6px;
+    }
+    .input{
+      width:100%;height:44px;padding:0 14px;
+      border:1.5px solid #cbd5e1;border-radius:10px;
+      background:#fff;font:inherit;font-size:14px;color:#0f172a;
+      transition:border-color .15s,box-shadow .15s;
+    }
+    .input:focus{
+      border-color:#3b82f6;
+      box-shadow:0 0 0 3px rgba(59,130,246,.14);
+      outline:none;
+    }
+    .field.has-error .input{border-color:#ef4444}
+    .error-msg{
+      margin-top:5px;font-size:12px;color:#dc2626;
+      display:flex;align-items:center;gap:5px;
+    }
+    .error-msg svg{width:13px;height:13px;flex:none}
+
+    /* Password wrap */
+    .pw-wrap{position:relative}
+    .pw-wrap .input{padding-right:44px}
+    .pw-toggle{
+      position:absolute;right:0;top:0;bottom:0;width:44px;
+      display:grid;place-items:center;
+      border:none;background:transparent;cursor:pointer;
+      color:#94a3b8;transition:color .12s;
+    }
+    .pw-toggle:hover{color:#475569}
+    .pw-toggle svg{width:17px;height:17px}
+
+    /* Remember */
+    .check{
+      display:flex;align-items:center;gap:9px;
+      cursor:pointer;font-size:13px;color:#475569;
+      user-select:none;
+    }
+    .check input{width:16px;height:16px;accent-color:#2563eb;flex:none}
+
+    /* Submit */
+    .btn{
+      width:100%;height:45px;
+      background:#2563eb;color:#fff;
+      border:none;border-radius:10px;
+      font:inherit;font-size:14.5px;font-weight:600;
+      cursor:pointer;
+      display:flex;align-items:center;justify-content:center;gap:8px;
+      box-shadow:0 2px 10px rgba(37,99,235,.32);
+      transition:background .15s,box-shadow .15s,transform .1s;
+    }
+    .btn:hover{background:#1d4ed8;box-shadow:0 4px 18px rgba(37,99,235,.42)}
+    .btn:active{transform:translateY(1px)}
+    .btn svg{width:18px;height:18px}
+
+    /* ── Hero panel ── */
+    .hero{
+      background:#0b1526;
+      display:flex;flex-direction:column;justify-content:flex-end;
+      padding:64px 60px;position:relative;overflow:hidden;
+    }
+    /* Animated grid */
+    .hero::before{
+      content:"";position:absolute;inset:0;
+      background:
+        repeating-linear-gradient(90deg,rgba(255,255,255,.038) 0 1px,transparent 1px 72px),
+        repeating-linear-gradient(0deg, rgba(255,255,255,.038) 0 1px,transparent 1px 72px);
+      animation:grid-move 24s linear infinite;
+    }
+    @keyframes grid-move{0%{background-position:0 0}100%{background-position:72px 72px}}
+
+    /* Orbs */
+    .orb{
+      position:absolute;border-radius:50%;
+      filter:blur(72px);
+      animation:breathe 7s ease-in-out infinite alternate;
+    }
+    .orb-a{width:420px;height:420px;background:#1e40af;opacity:.38;top:-90px;right:-60px}
+    .orb-b{width:280px;height:280px;background:#5b21b6;opacity:.32;bottom:80px;right:120px;animation-delay:3.5s}
+    @keyframes breathe{from{transform:scale(1);opacity:.32}to{transform:scale(1.1);opacity:.5}}
+
+    /* Stats */
+    .stats{display:flex;flex-wrap:wrap;gap:14px;position:relative;margin-bottom:48px}
+    .stat{
+      background:rgba(255,255,255,.07);
+      border:1px solid rgba(255,255,255,.13);
+      border-radius:12px;padding:16px 20px;
+      backdrop-filter:blur(8px);
+      transition:background .2s;
+    }
+    .stat:hover{background:rgba(255,255,255,.12)}
+    .stat .n{font-size:24px;font-weight:700;color:#fff;letter-spacing:-.03em;line-height:1.1}
+    .stat .l{font-size:11.5px;color:#8fa3c0;margin-top:3px}
+
+    /* Copy */
+    .copy{position:relative}
+    .copy h2{
+      font-size:34px;font-weight:700;color:#fff;
+      max-width:18ch;line-height:1.12;
+      letter-spacing:-.025em;margin-bottom:16px;
+    }
+    .copy p{color:#8fa3c0;max-width:40ch;font-size:14px;line-height:1.7}
+
+    .seal{
+      display:flex;align-items:center;gap:13px;
+      border:1px solid rgba(255,255,255,.16);border-radius:11px;
+      padding:14px 18px;margin-top:30px;max-width:350px;
+      background:rgba(255,255,255,.04);
+      font-size:13px;color:#8fa3c0;
+    }
+    .seal svg{width:20px;height:20px;color:#4ade80;flex:none}
+
+    /* Responsive */
+    @media(max-width:860px){.shell{grid-template-columns:1fr}.hero{display:none}}
+    @media(max-width:460px){.panel{padding:32px 20px}.card h1{font-size:22px}}
+    @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+
+    @keyframes spin{to{transform:rotate(360deg)}}
+  </style>
+</head>
+<body>
+
+<div class="shell">
+
+  <!-- ══ Login form ══ -->
+  <section class="panel">
+    <div class="card">
+
+      <!-- Brand -->
+      <div class="brand">
+        <img class="brand-logo"
+             src="{{ org.logo_url|default:'' }}"
+             onerror="this.src='{% static 'images/logo-placeholder.svg' %}'"
+             alt="Logo">
+        <div>
+          <div class="brand-name">{{ org.name|default:"Meridian Training Institute" }}</div>
+          <div class="brand-sub">Certification Portal</div>
+        </div>
+      </div>
+
+      <h1>Welcome back</h1>
+      <p class="sub">Enter your credentials to continue.</p>
+
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert {% if message.tags == 'info' %}alert-info{% elif message.tags == 'success' %}alert-success{% endif %}" role="alert">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            <span>{{ message }}</span>
+          </div>
+        {% endfor %}
+      {% endif %}
+
+      {% if form.errors %}
+        <div class="alert" role="alert">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+          <span>{% for e in form.non_field_errors %}{{ e }}{% empty %}Invalid credentials. Please try again.{% endfor %}</span>
+        </div>
+      {% endif %}
+
+      <form method="post" action="" novalidate id="login-form">
+        {% csrf_token %}
+        {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+
+        <div class="stack">
+
+          <!-- Username -->
+          <div class="field {% if form.username.errors %}has-error{% endif %}">
+            <label for="id_username">Username or Email</label>
+            <input class="input" id="id_username" name="username" type="text"
+                   autocomplete="username" required spellcheck="false"
+                   placeholder="Enter your username or email"
+                   value="{{ form.username.value|default:'' }}">
+            {% if form.username.errors %}
+              <p class="error-msg">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                {{ form.username.errors.0 }}
+              </p>
+            {% endif %}
+          </div>
+
+          <!-- Password -->
+          <div class="field {% if form.password.errors %}has-error{% endif %}">
+            <label for="id_password">Password</label>
+            <div class="pw-wrap">
+              <input class="input" id="id_password" name="password" type="password"
+                     autocomplete="current-password" required minlength="4"
+                     placeholder="Enter your password">
+              <button type="button" class="pw-toggle" id="pw-btn" aria-label="Show password">
+                <svg id="eye-show" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                </svg>
+                <svg id="eye-hide" hidden xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                  <line x1="1" y1="1" x2="23" y2="23"/>
+                </svg>
+              </button>
+            </div>
+            {% if form.password.errors %}
+              <p class="error-msg">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                {{ form.password.errors.0 }}
+              </p>
+            {% endif %}
+          </div>
+
+          <!-- Remember -->
+          <label class="check">
+            <input type="checkbox" name="remember" value="1" {% if form.remember.value %}checked{% endif %}>
+            Keep me signed in
+          </label>
+
+          <!-- Submit -->
+          <button type="submit" class="btn" id="submit-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+              <polyline points="10 17 15 12 10 7"/>
+              <line x1="15" y1="12" x2="3" y2="12"/>
+            </svg>
+            Sign in
+          </button>
+        </div>
+      </form>
+
+    </div>
+  </section>
+
+  <!-- ══ Hero ══ -->
+  <aside class="hero" aria-hidden="true">
+    <div class="orb orb-a"></div>
+    <div class="orb orb-b"></div>
+
+    <div class="stats">
+      <div class="stat"><div class="n">100%</div><div class="l">Tamper-proof</div></div>
+      <div class="stat"><div class="n">QR</div><div class="l">Verified instantly</div></div>
+      <div class="stat"><div class="n">PDF</div><div class="l">Download anytime</div></div>
+    </div>
+
+    <div class="copy">
+      <h2>Every completed course, officially certified.</h2>
+      <p>Track attendance, approve completions, and issue tamper-proof certificates from one centralized portal.</p>
+      <div class="seal">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          <polyline points="9 12 11 14 15 10"/>
+        </svg>
+        Certificates carry unique verification identifiers.
+      </div>
+    </div>
+  </aside>
+
+</div>
+
+<script>
+(function(){
+  // Password toggle
+  var btn  = document.getElementById('pw-btn');
+  var pw   = document.getElementById('id_password');
+  var show = document.getElementById('eye-show');
+  var hide = document.getElementById('eye-hide');
+  if(btn) btn.addEventListener('click', function(){
+    var visible = pw.type === 'text';
+    pw.type = visible ? 'password' : 'text';
+    show.hidden = !visible;
+    hide.hidden = visible;
+    btn.setAttribute('aria-label', visible ? 'Show password' : 'Hide password');
+  });
+
+  // Submit spinner
+  document.getElementById('login-form').addEventListener('submit', function(){
+    var b = document.getElementById('submit-btn');
+    b.disabled = true;
+    b.innerHTML =
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"' +
+      ' style="width:18px;height:18px;animation:spin .7s linear infinite">' +
+      '<line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/>' +
+      '<line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/>' +
+      '<line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/>' +
+      '<line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/>' +
+      '</svg> Signing in\u2026';
+  });
+})();
+</script>
+
+</body>
+</html>

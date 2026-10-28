@@ -1,30 +1,132 @@
 {% extends 'base.html' %}
 {% load static %}
-{% comment %}
-Enrollment form. Backend: StudentForm + EnrollmentForm, courses (open for enrollment), generated registration number.
-{% endcomment %}
 {% block title %}Enroll student{% endblock %}
 {% block role %}admin{% endblock %}
 {% block nav_key %}students{% endblock %}
 {% block content %}
-<div class="page-head"><div><div class="breadcrumb"><a href="/portal/admin/students/">Students</a><span>/</span><span>Enroll student</span></div><h1>Enroll student</h1><p>Add a new student or enroll an existing one in a course. A registration number is generated when the record is saved.</p></div></div>
-<form class="card" data-validate data-success="Student enrolled" data-redirect="/portal/admin/students/" method="post" action="">
+<div class="page-head">
+  <div>
+    <div class="breadcrumb">
+      <a href="/portal/admin/students/">Students</a><span>/</span><span>Enroll student</span>
+    </div>
+    <h1>Enroll student</h1>
+    <p>Add a new student or enroll an existing one in a course. A unique registration number is generated automatically.</p>
+  </div>
+</div>
+
+<form class="card" data-validate method="post" action="">
   {% csrf_token %}
   <div class="card-body">
-    <div class="alert alert-error" role="alert" hidden><i data-lucide="circle-alert"></i><span>Fix the highlighted fields before saving.</span></div>
-    <div class="form-section"><h2>Student</h2><p>Contact details used for the portal login and certificate.</p>
+    {% if form.errors %}
+      <div class="alert alert-error" role="alert">
+        <i data-lucide="circle-alert"></i>
+        <span>Please correct the errors below before saving.</span>
+      </div>
+    {% endif %}
+
+    <div class="form-section">
+      <h2>Student Details</h2>
+      <p>Contact details used for the portal login and certificate.</p>
       <div class="form-grid">
-        <div class="field"><label for="full_name">Full name <span class="req">*</span></label><input class="input" id="full_name" name="full_name" required data-error="Enter the student's full name as it should appear on the certificate."><p class="error-text"><i data-lucide="circle-alert" style="width:14px;height:14px"></i><span></span></p></div>
-        <div class="field"><label for="email">Email <span class="req">*</span></label><input class="input" id="email" name="email" type="email" required data-error="Enter a valid email address."><p class="error-text"><i data-lucide="circle-alert" style="width:14px;height:14px"></i><span></span></p></div>
-        <div class="field"><label for="phone">Phone</label><input class="input" id="phone" name="phone" type="tel" placeholder="+1 555 0100"></div>
-        <div class="field"><label for="reg">Registration number</label><input class="input" id="reg" value="MTI-2026-0143" readonly aria-describedby="reg-h"><span class="hint" id="reg-h">Generated automatically. Shown here as a placeholder.</span></div>
-      </div></div>
-    <div class="form-section"><h2>Enrollment</h2><p>Pick the course and the start of enrollment.</p>
+        <div class="field {% if form.full_name.errors %}has-error{% endif %}">
+          <label for="full_name">Full name <span class="req">*</span></label>
+          <input class="input" id="full_name" name="full_name" required
+                 value="{{ form.full_name.value|default:'' }}"
+                 placeholder="e.g. Priya Raman"
+                 data-error="Enter the student's full name as it should appear on the certificate.">
+          <p class="error-text">
+            <i data-lucide="circle-alert" style="width:14px;height:14px"></i>
+            <span>{{ form.full_name.errors.0|default:"" }}</span>
+          </p>
+        </div>
+
+        <div class="field {% if form.email.errors %}has-error{% endif %}">
+          <label for="email">Email <span class="req">*</span></label>
+          <input class="input" id="email" name="email" type="email" required
+                 value="{{ form.email.value|default:'' }}"
+                 placeholder="e.g. priya.raman@example.com"
+                 data-error="Enter a valid email address.">
+          <p class="error-text">
+            <i data-lucide="circle-alert" style="width:14px;height:14px"></i>
+            <span>{{ form.email.errors.0|default:"" }}</span>
+          </p>
+        </div>
+
+        <div class="field {% if form.username.errors %}has-error{% endif %}">
+          <label for="username">Portal username</label>
+          <input class="input" id="username" name="username"
+                 value="{{ form.username.value|default:'' }}"
+                 placeholder="e.g. {{ suggested_reg|lower }} or student handle">
+          <span class="hint">Optional. Defaults to registration number if blank.</span>
+          <p class="error-text">
+            <i data-lucide="circle-alert" style="width:14px;height:14px"></i>
+            <span>{{ form.username.errors.0|default:"" }}</span>
+          </p>
+        </div>
+
+        <div class="field {% if form.password.errors %}has-error{% endif %}">
+          <label for="password">Initial password</label>
+          <input class="input" id="password" name="password" type="password" minlength="8"
+                 placeholder="Min. 8 characters">
+          <span class="hint">Optional. Defaults to registration number if blank.</span>
+          <p class="error-text">
+            <i data-lucide="circle-alert" style="width:14px;height:14px"></i>
+            <span>{{ form.password.errors.0|default:"" }}</span>
+          </p>
+        </div>
+
+        <div class="field">
+          <label for="phone">Phone number</label>
+          <input class="input" id="phone" name="phone" type="tel"
+                 value="{{ form.phone.value|default:'' }}"
+                 placeholder="+1 555 0100">
+        </div>
+
+        <div class="field">
+          <label for="reg">Suggested registration number</label>
+          <input class="input" id="reg" value="{{ suggested_reg }}" readonly aria-describedby="reg-h">
+          <span class="hint" id="reg-h">Generated automatically by year and sequence.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h2>Enrollment Information</h2>
+      <p>Select the training course and start date.</p>
       <div class="form-grid">
-        <div class="field"><label for="course">Course <span class="req">*</span></label><select class="select" id="course" name="course" required data-error="Choose a course."><option value="">Select a course</option><option>Industrial Safety Fundamentals</option><option>Project Management Essentials</option><option>Data Analysis with Excel</option><option>Safety Leadership</option></select><p class="error-text"><i data-lucide="circle-alert" style="width:14px;height:14px"></i><span></span></p></div>
-        <div class="field"><label for="enroll_date">Enrollment date <span class="req">*</span></label><input class="input" id="enroll_date" name="enroll_date" type="date" required data-error="Choose the enrollment date."><p class="error-text"><i data-lucide="circle-alert" style="width:14px;height:14px"></i><span></span></p></div>
-      </div></div>
-    <div class="form-actions"><a class="btn" href="/portal/admin/students/">Cancel</a><button class="btn btn-primary" type="submit">Enroll student</button></div>
+        <div class="field {% if form.course.errors %}has-error{% endif %}">
+          <label for="course">Course <span class="req">*</span></label>
+          <select class="select" id="course" name="course" required data-error="Choose a course.">
+            <option value="">Select a course</option>
+            {% for c in courses %}
+              <option value="{{ c.id }}" {% if form.course.value|stringformat:"s" == c.id|stringformat:"s" %}selected{% endif %}>
+                {{ c.name }} ({{ c.code }})
+              </option>
+            {% endfor %}
+          </select>
+          <p class="error-text">
+            <i data-lucide="circle-alert" style="width:14px;height:14px"></i>
+            <span>{{ form.course.errors.0|default:"" }}</span>
+          </p>
+        </div>
+
+        <div class="field {% if form.enroll_date.errors %}has-error{% endif %}">
+          <label for="enroll_date">Enrollment date <span class="req">*</span></label>
+          <input class="input" id="enroll_date" name="enroll_date" type="date" required
+                 value="{{ form.enroll_date.value|date:'Y-m-d'|default:now|date:'Y-m-d' }}"
+                 data-error="Choose the enrollment date.">
+          <p class="error-text">
+            <i data-lucide="circle-alert" style="width:14px;height:14px"></i>
+            <span>{{ form.enroll_date.errors.0|default:"" }}</span>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <a class="btn" href="/portal/admin/students/">Cancel</a>
+      <button class="btn btn-primary" type="submit">Enroll student</button>
+    </div>
   </div>
 </form>
 {% endblock %}
